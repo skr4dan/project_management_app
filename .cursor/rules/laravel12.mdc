@@ -1,0 +1,21 @@
+---
+description: Laravel 12
+alwaysApply: true
+---
+
+# General
+- Use modern Laravel 12 and PHP 8.4 conventions in all code.
+- Prefer the cleanest and most maintainable solution.
+- When requirements are unclear, ask for clarification rather than assuming.
+- Highlight mistakes, anti-patterns, and possible improvements.
+
+# Code Style
+- Add typehints everywhere possible using PHP 8.4 features.
+- If native types are insufficient, use phpstan annotations.
+- Avoid unnecessary comments — code should be self-explanatory with clear function and variable names.
+- Do not introduce temporary variables unless they simplify a complex expression.
+
+# Architecture
+- Apply SOLID and OOP principles in all design decisions.
+- Use a service layer and repository pattern, with filters as separate criteria objects.
+- Keep services highly specific; avoid god classes (e.g., `OrderService` tied directly to a model).
