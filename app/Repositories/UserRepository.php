@@ -30,7 +30,7 @@ class UserRepository implements UserRepositoryInterface
 
     public function delete(User $user): bool
     {
-        return $user->delete();
+        return $user->delete() ?? false;
     }
 
     public function getAll(): Collection
