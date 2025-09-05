@@ -2,6 +2,11 @@
 
 namespace App\Services;
 
+use App\DTOs\Auth\AuthResponseDTO;
+use App\DTOs\Auth\LoginDTO;
+use App\DTOs\Auth\RegisterDTO;
+use App\DTOs\Auth\TokenResponseDTO;
+use App\DTOs\User\UserDTO;
 use App\Models\User;
 use App\Services\Contracts\AuthServiceInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
@@ -17,13 +22,13 @@ class AuthService implements AuthServiceInterface
     /**
      * Authenticate user and return JWT token.
      *
-     * @param array{email: string, password: string} $credentials
-     * @return array{access_token: string, token_type: string, expires_in: int, user: User}
+     * @param LoginDTO $loginDTO
+     * @return AuthResponseDTO
      * @throws \Exception
      */
-    public function login(array $credentials): array
+    public function login(LoginDTO $loginDTO): AuthResponseDTO
     {
-        $token = JWTAuth::attempt($credentials);
+        $token = JWTAuth::attempt($loginDTO->toArray());
 
         if (!$token) {
             throw new \Exception('Invalid credentials');
@@ -32,43 +37,56 @@ class AuthService implements AuthServiceInterface
         /** @var User $user */
         $user = JWTAuth::user();
 
-        return [
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'expires_in' => config('jwt.ttl') * 60, // Convert minutes to seconds
-            'user' => $user,
-        ];
+        return new AuthResponseDTO(
+            access_token: $token,
+            token_type: 'Bearer',
+            expires_in: config('jwt.ttl') * 60, // Convert minutes to seconds
+            user: $user,
+        );
     }
 
     /**
      * Register a new user and return JWT token.
      *
-     * @param array{name: string, email: string, password: string} $userData
-     * @return array{access_token: string, token_type: string, expires_in: int, user: User}
+     * @param RegisterDTO $registerDTO
+     * @return AuthResponseDTO
      * @throws \Exception
      */
-    public function register(array $userData): array
+    public function register(RegisterDTO $registerDTO): AuthResponseDTO
     {
         // Check if user already exists
-        if ($this->userRepository->findByEmail($userData['email'])) {
+        if ($this->userRepository->findByEmail($registerDTO->email)) {
             throw new \Exception('User already exists with this email');
         }
 
-        // Hash the password
-        $userData['password'] = Hash::make($userData['password']);
+        // Create UserDTO from RegisterDTO
+        $userDTO = new UserDTO(
+            id: null,
+            first_name: explode(' ', $registerDTO->name)[0],
+            last_name: trim(str_replace(explode(' ', $registerDTO->name)[0], '', $registerDTO->name)),
+            email: $registerDTO->email,
+            password: Hash::make($registerDTO->password),
+            role_id: null,
+            status: \App\Enums\User\UserStatus::Active,
+            avatar: null,
+            phone: null,
+            remember_token: null,
+            created_at: null,
+            updated_at: null
+        );
 
         // Create user
-        $user = $this->userRepository->create($userData);
+        $user = $this->userRepository->createFromDTO($userDTO);
 
         // Generate token
         $token = JWTAuth::fromUser($user);
 
-        return [
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'expires_in' => config('jwt.ttl') * 60,
-            'user' => $user,
-        ];
+        return new AuthResponseDTO(
+            access_token: $token,
+            token_type: 'Bearer',
+            expires_in: config('jwt.ttl') * 60,
+            user: $user,
+        );
     }
 
     /**
@@ -82,17 +100,17 @@ class AuthService implements AuthServiceInterface
     /**
      * Refresh JWT token.
      *
-     * @return array{access_token: string, token_type: string, expires_in: int}
+     * @return TokenResponseDTO
      */
-    public function refresh(): array
+    public function refresh(): TokenResponseDTO
     {
         $newToken = JWTAuth::refresh();
 
-        return [
-            'access_token' => $newToken,
-            'token_type' => 'Bearer',
-            'expires_in' => config('jwt.ttl') * 60,
-        ];
+        return new TokenResponseDTO(
+            access_token: $newToken,
+            token_type: 'Bearer',
+            expires_in: config('jwt.ttl') * 60,
+        );
     }
 
     /**

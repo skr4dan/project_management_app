@@ -32,7 +32,8 @@ class AuthTest extends TestCase
                     'expires_in',
                     'user' => [
                         'id',
-                        'name',
+                        'first_name',
+                        'last_name',
                         'email',
                         'created_at',
                         'updated_at',
@@ -49,7 +50,8 @@ class AuthTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('users', [
-            'name' => 'John Doe',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
             'email' => 'john@example.com',
         ]);
     }
@@ -113,7 +115,8 @@ class AuthTest extends TestCase
                     'expires_in',
                     'user' => [
                         'id',
-                        'name',
+                        'first_name',
+                        'last_name',
                         'email',
                     ],
                 ],
@@ -181,7 +184,8 @@ class AuthTest extends TestCase
                 'success' => true,
                 'data' => [
                     'id' => $user->id,
-                    'name' => $user->name,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
                     'email' => $user->email,
                 ],
                 'message' => 'User profile retrieved successfully',
@@ -354,7 +358,8 @@ class AuthTest extends TestCase
                 'success' => true,
                 'data' => [
                     'id' => $user->id,
-                    'name' => $user->name,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
                     'email' => $user->email,
                 ],
             ]);

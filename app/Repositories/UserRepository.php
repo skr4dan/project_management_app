@@ -2,39 +2,180 @@
 
 namespace App\Repositories;
 
+use App\DTOs\User\UserDTO;
+use App\Enums\User\UserStatus;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * User Repository Implementation
+ *
+ * Handles all user-related database operations using DTOs.
+ * Follows SOLID principles with single responsibility focus.
+ */
 class UserRepository implements UserRepositoryInterface
 {
-    public function findByEmail(string $email): ?User
+    /**
+     * Create a new user repository instance
+     *
+     * @param User $user
+     */
+    public function __construct(
+        private User $user
+    ) {}
+
+    /**
+     * Find user by ID
+     *
+     * @param int $id
+     * @return User|null
+     */
+    public function find(int $id): ?User
     {
-        return User::where('email', $email)->first();
+        return $this->user->find($id);
     }
 
+    /**
+     * Find user by ID
+     *
+     * @param int $id
+     * @return User|null
+     */
     public function findById(int $id): ?User
     {
-        return User::find($id);
+        return $this->find($id);
     }
 
-    public function create(array $attributes): User
+    /**
+     * Find user by ID or throw exception
+     *
+     * @param int $id
+     * @return User
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function findOrFail(int $id): User
     {
-        return User::create($attributes);
+        return $this->user->findOrFail($id);
     }
 
-    public function update(User $user, array $attributes): bool
+    /**
+     * Find user by email
+     *
+     * @param string $email
+     * @return User|null
+     */
+    public function findByEmail(string $email): ?User
     {
-        return $user->update($attributes);
+        return $this->user->where('email', $email)->first();
     }
 
-    public function delete(User $user): bool
+    /**
+     * Find users by role
+     *
+     * @param int $roleId
+     * @return Collection<int, User>
+     */
+    public function findByRole(int $roleId): Collection
     {
-        return $user->delete() ?? false;
+        return $this->user->where('role_id', $roleId)->get();
     }
 
-    public function getAll(): Collection
+    /**
+     * Find users by status
+     *
+     * @param UserStatus $status
+     * @return Collection<int, User>
+     */
+    public function findByStatus(UserStatus $status): Collection
     {
-        return User::all();
+        return $this->user->where('status', $status->value)->get();
+    }
+
+    /**
+     * Get active users
+     *
+     * @return Collection<int, User>
+     */
+    public function getActiveUsers(): Collection
+    {
+        return $this->findByStatus(UserStatus::Active);
+    }
+
+    /**
+     * Create user from DTO
+     *
+     * @param UserDTO $userDTO
+     * @return User
+     */
+    public function createFromDTO(UserDTO $userDTO): User
+    {
+        return $this->user->create($userDTO->toModelArray());
+    }
+
+    /**
+     * Update user from DTO
+     *
+     * @param int $id
+     * @param UserDTO $userDTO
+     * @return bool
+     */
+    public function updateFromDTO(int $id, UserDTO $userDTO): bool
+    {
+        $user = $this->find($id);
+        return $user ? $user->update($userDTO->toModelArray()) : false;
+    }
+
+    /**
+     * Search users by name or email
+     *
+     * @param string $query
+     * @return Collection<int, User>
+     */
+    public function search(string $query): Collection
+    {
+        return $this->user
+            ->where('first_name', 'like', "%{$query}%")
+            ->orWhere('last_name', 'like', "%{$query}%")
+            ->orWhere('email', 'like', "%{$query}%")
+            ->get();
+    }
+
+    /**
+     * Update user status
+     *
+     * @param int $id
+     * @param UserStatus $status
+     * @return bool
+     */
+    public function updateStatus(int $id, UserStatus $status): bool
+    {
+        $user = $this->find($id);
+        return $user ? $user->update(['status' => $status->value]) : false;
+    }
+
+    /**
+     * Assign role to user
+     *
+     * @param int $userId
+     * @param int $roleId
+     * @return bool
+     */
+    public function assignRole(int $userId, int $roleId): bool
+    {
+        $user = $this->find($userId);
+        return $user ? $user->update(['role_id' => $roleId]) : false;
+    }
+
+    /**
+     * Remove role from user
+     *
+     * @param int $userId
+     * @return bool
+     */
+    public function removeRole(int $userId): bool
+    {
+        $user = $this->find($userId);
+        return $user ? $user->update(['role_id' => null]) : false;
     }
 }

@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DTOs\Auth\AuthResponseDTO;
+use App\DTOs\Auth\LoginDTO;
+use App\DTOs\Auth\RegisterDTO;
+use App\DTOs\Auth\TokenResponseDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
@@ -22,15 +26,17 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         try {
-            $result = $this->authService->login($request->validated());
+            $loginDTO = LoginDTO::fromArray($request->validated());
+            /** @var AuthResponseDTO $result */
+            $result = $this->authService->login($loginDTO);
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'access_token' => $result['access_token'],
-                    'token_type' => $result['token_type'],
-                    'expires_in' => $result['expires_in'],
-                    'user' => new UserResource($result['user']),
+                    'access_token' => $result->access_token,
+                    'token_type' => $result->token_type,
+                    'expires_in' => $result->expires_in,
+                    'user' => new UserResource($result->user),
                 ],
                 'message' => 'Login successful',
             ], Response::HTTP_OK);
@@ -48,15 +54,17 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         try {
-            $result = $this->authService->register($request->validated());
+            $registerDTO = RegisterDTO::fromArray($request->validated());
+            /** @var AuthResponseDTO $result */
+            $result = $this->authService->register($registerDTO);
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'access_token' => $result['access_token'],
-                    'token_type' => $result['token_type'],
-                    'expires_in' => $result['expires_in'],
-                    'user' => new UserResource($result['user']),
+                    'access_token' => $result->access_token,
+                    'token_type' => $result->token_type,
+                    'expires_in' => $result->expires_in,
+                    'user' => new UserResource($result->user),
                 ],
                 'message' => 'Registration successful',
             ], Response::HTTP_CREATED);
@@ -94,11 +102,12 @@ class AuthController extends Controller
     public function refresh(): JsonResponse
     {
         try {
+            /** @var TokenResponseDTO $result */
             $result = $this->authService->refresh();
 
             return response()->json([
                 'success' => true,
-                'data' => $result,
+                'data' => $result->toArray(),
                 'message' => 'Token refreshed successfully',
             ], Response::HTTP_OK);
         } catch (\Exception $e) {

@@ -2,6 +2,10 @@
 
 namespace App\Services\Contracts;
 
+use App\DTOs\Auth\AuthResponseDTO;
+use App\DTOs\Auth\LoginDTO;
+use App\DTOs\Auth\RegisterDTO;
+use App\DTOs\Auth\TokenResponseDTO;
 use App\Models\User;
 
 interface AuthServiceInterface
@@ -9,20 +13,20 @@ interface AuthServiceInterface
     /**
      * Authenticate user and return JWT token.
      *
-     * @param array{email: string, password: string} $credentials
-     * @return array{access_token: string, token_type: string, expires_in: int, user: User}
+     * @param LoginDTO $loginDTO
+     * @return AuthResponseDTO
      * @throws \Exception
      */
-    public function login(array $credentials): array;
+    public function login(LoginDTO $loginDTO): AuthResponseDTO;
 
     /**
      * Register a new user and return JWT token.
      *
-     * @param array{name: string, email: string, password: string} $userData
-     * @return array{access_token: string, token_type: string, expires_in: int, user: User}
+     * @param RegisterDTO $registerDTO
+     * @return AuthResponseDTO
      * @throws \Exception
      */
-    public function register(array $userData): array;
+    public function register(RegisterDTO $registerDTO): AuthResponseDTO;
 
     /**
      * Logout user by invalidating token.
@@ -32,9 +36,9 @@ interface AuthServiceInterface
     /**
      * Refresh JWT token.
      *
-     * @return array{access_token: string, token_type: string, expires_in: int}
+     * @return TokenResponseDTO
      */
-    public function refresh(): array;
+    public function refresh(): TokenResponseDTO;
 
     /**
      * Get authenticated user.

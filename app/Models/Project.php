@@ -31,14 +31,14 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected array $fillable = [
+    protected $fillable = [
         'name',
         'description',
         'status',
         'created_by',
     ];
 
-    protected array $casts = [
+    protected $casts = [
         'status' => ProjectStatus::class,
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

@@ -18,7 +18,7 @@ class UserRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->userRepository = new UserRepository();
+        $this->userRepository = new UserRepository(new User());
     }
 
     #[Test]
@@ -62,171 +62,218 @@ class UserRepositoryTest extends TestCase
         $this->assertNull($foundUser);
     }
 
+
     #[Test]
-    public function it_can_create_new_user()
+    public function it_can_find_users_by_role()
     {
-        $plainPassword = 'password123';
-        $userData = [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => $plainPassword,
-        ];
+        $role = \App\Models\Role::factory()->create();
+        User::factory()->count(2)->create(['role_id' => $role->id]);
+        User::factory()->count(1)->create(); // Different role
 
-        $user = $this->userRepository->create($userData);
+        $users = $this->userRepository->findByRole($role->id);
 
-        $this->assertInstanceOf(User::class, $user);
-        $this->assertEquals('John Doe', $user->name);
-        $this->assertEquals('john@example.com', $user->email);
-        // Password should be hashed automatically by the model
-        $this->assertTrue(password_verify($plainPassword, $user->password));
-        $this->assertDatabaseHas('users', [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-        ]);
+        $this->assertCount(2, $users);
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $users);
+        $users->each(function ($user) use ($role) {
+            $this->assertEquals($role->id, $user->role_id);
+        });
     }
 
     #[Test]
-    public function it_can_update_user_attributes()
+    public function it_can_find_users_by_status()
+    {
+        User::factory()->count(3)->create(['status' => \App\Enums\User\UserStatus::Active->value]);
+        User::factory()->count(2)->create(['status' => \App\Enums\User\UserStatus::Inactive->value]);
+
+        $users = $this->userRepository->findByStatus(\App\Enums\User\UserStatus::Active);
+
+        $this->assertCount(3, $users);
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $users);
+        $users->each(function ($user) {
+            $this->assertEquals(\App\Enums\User\UserStatus::Active, $user->status);
+        });
+    }
+
+    #[Test]
+    public function it_can_get_active_users()
+    {
+        User::factory()->count(4)->create(['status' => \App\Enums\User\UserStatus::Active->value]);
+        User::factory()->count(2)->create(['status' => \App\Enums\User\UserStatus::Inactive->value]);
+
+        $users = $this->userRepository->getActiveUsers();
+
+        $this->assertCount(4, $users);
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $users);
+        $users->each(function ($user) {
+            $this->assertEquals(\App\Enums\User\UserStatus::Active, $user->status);
+        });
+    }
+
+    #[Test]
+    public function it_can_create_user_from_dto()
+    {
+        $role = \App\Models\Role::factory()->create();
+        $plainPassword = 'password123';
+
+        $userDTO = new \App\DTOs\User\UserDTO(
+            id: null,
+            first_name: 'John',
+            last_name: 'Doe',
+            email: 'john@example.com',
+            password: $plainPassword,
+            role_id: $role->id,
+            status: \App\Enums\User\UserStatus::Active,
+            avatar: null,
+            phone: null,
+            remember_token: null,
+            created_at: null,
+            updated_at: null
+        );
+
+        $user = $this->userRepository->createFromDTO($userDTO);
+
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertEquals('John', $user->first_name);
+        $this->assertEquals('Doe', $user->last_name);
+        $this->assertEquals('john@example.com', $user->email);
+        $this->assertEquals(\App\Enums\User\UserStatus::Active, $user->status);
+        $this->assertEquals($role->id, $user->role_id);
+        $this->assertTrue(password_verify($plainPassword, $user->password));
+    }
+
+    #[Test]
+    public function it_can_update_user_from_dto()
     {
         $user = User::factory()->create([
-            'name' => 'Original Name',
+            'first_name' => 'Original',
+            'last_name' => 'Name',
             'email' => 'original@example.com',
         ]);
 
-        $updated = $this->userRepository->update($user, [
-            'name' => 'Updated Name',
-            'email' => 'updated@example.com',
-        ]);
+        $userDTO = new \App\DTOs\User\UserDTO(
+            id: $user->id,
+            first_name: 'Updated',
+            last_name: 'Name',
+            email: 'updated@example.com',
+            password: 'newpassword',
+            role_id: $user->role_id,
+            status: \App\Enums\User\UserStatus::Inactive,
+            avatar: $user->avatar,
+            phone: $user->phone,
+            remember_token: $user->remember_token,
+            created_at: $user->created_at,
+            updated_at: $user->updated_at
+        );
+
+        $updated = $this->userRepository->updateFromDTO($user->id, $userDTO);
 
         $this->assertTrue($updated);
-        $this->assertEquals('Updated Name', $user->fresh()->name);
+        $this->assertEquals('Updated', $user->fresh()->first_name);
+        $this->assertEquals('Name', $user->fresh()->last_name);
         $this->assertEquals('updated@example.com', $user->fresh()->email);
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'name' => 'Updated Name',
-            'email' => 'updated@example.com',
-        ]);
+        $this->assertEquals(\App\Enums\User\UserStatus::Inactive, $user->fresh()->status);
+        $this->assertTrue(password_verify('newpassword', $user->fresh()->password));
     }
 
     #[Test]
-    public function it_returns_false_when_update_fails()
+    public function it_returns_false_when_update_from_dto_fails()
     {
-        $user = User::factory()->create();
+        $userDTO = new \App\DTOs\User\UserDTO(
+            id: null,
+            first_name: 'Test',
+            last_name: 'User',
+            email: 'test@example.com',
+            password: 'password',
+            role_id: 1,
+            status: \App\Enums\User\UserStatus::Active,
+            avatar: null,
+            phone: null,
+            remember_token: null,
+            created_at: null,
+            updated_at: null
+        );
 
-        // Delete the user to simulate update failure
-        $user->delete();
-
-        $updated = $this->userRepository->update($user, [
-            'name' => 'Updated Name',
-        ]);
+        $updated = $this->userRepository->updateFromDTO(999, $userDTO);
 
         $this->assertFalse($updated);
     }
 
     #[Test]
-    public function it_can_delete_user()
+    public function it_can_search_users()
     {
-        $user = User::factory()->create();
-
-        $deleted = $this->userRepository->delete($user);
-
-        $this->assertTrue($deleted);
-        $this->assertDatabaseMissing('users', [
-            'id' => $user->id,
+        User::factory()->create([
+            'first_name' => 'John',
+            'last_name' => 'Doe'
         ]);
-    }
-
-    #[Test]
-    public function it_returns_false_when_delete_fails()
-    {
-        // Create a user instance that doesn't exist in the database
-        $user = new User([
-            'id' => 99999,
-            'name' => 'Non-existent User',
-            'email' => 'nonexistent@example.com',
-            'password' => 'password123',
+        User::factory()->create(['email' => 'jane@example.com']);
+        User::factory()->create([
+            'first_name' => 'Bob',
+            'last_name' => 'Smith'
         ]);
 
-        // This should return false since the user doesn't exist
-        $deleted = $this->userRepository->delete($user);
+        $results = $this->userRepository->search('John');
 
-        $this->assertFalse($deleted);
+        $this->assertCount(1, $results);
+        $this->assertEquals('John', $results->first()->first_name);
+        $this->assertEquals('Doe', $results->first()->last_name);
     }
 
     #[Test]
-    public function it_can_get_all_users()
+    public function it_can_update_user_status()
     {
-        User::factory()->count(3)->create();
+        $user = User::factory()->create(['status' => \App\Enums\User\UserStatus::Active->value]);
 
-        $users = $this->userRepository->getAll();
+        $updated = $this->userRepository->updateStatus($user->id, \App\Enums\User\UserStatus::Blocked);
 
-        $this->assertCount(3, $users);
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $users);
-        $this->assertContainsOnlyInstancesOf(User::class, $users);
+        $this->assertTrue($updated);
+        $this->assertEquals(\App\Enums\User\UserStatus::Blocked, $user->fresh()->status);
     }
 
     #[Test]
-    public function it_returns_empty_collection_when_no_users_exist()
+    public function it_returns_false_when_update_status_fails()
     {
-        $users = $this->userRepository->getAll();
+        $updated = $this->userRepository->updateStatus(999, \App\Enums\User\UserStatus::Active);
 
-        $this->assertCount(0, $users);
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $users);
+        $this->assertFalse($updated);
     }
 
     #[Test]
-    public function it_preserves_user_attributes_when_creating()
+    public function it_can_assign_role_to_user()
     {
-        $plainPassword = 'testpassword';
-        $emailVerifiedAt = now();
-        $userData = [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => $plainPassword,
-            'email_verified_at' => $emailVerifiedAt,
-        ];
+        $user = User::factory()->create(['role_id' => null]);
+        $role = \App\Models\Role::factory()->create();
 
-        $user = $this->userRepository->create($userData);
+        $assigned = $this->userRepository->assignRole($user->id, $role->id);
 
-        $this->assertEquals('Test User', $user->name);
-        $this->assertEquals('test@example.com', $user->email);
-        // Password should be hashed automatically
-        $this->assertTrue(password_verify($plainPassword, $user->password));
+        $this->assertTrue($assigned);
+        $this->assertEquals($role->id, $user->fresh()->role_id);
     }
 
     #[Test]
-    public function it_handles_mass_assignment_properly()
+    public function it_returns_false_when_assign_role_fails()
     {
-        $plainPassword = 'testpass';
-        $userData = [
-            'name' => 'Mass Assignment Test',
-            'email' => 'mass@test.com',
-            'password' => $plainPassword,
-        ];
+        $assigned = $this->userRepository->assignRole(999, 1);
 
-        $user = $this->userRepository->create($userData);
-
-        $this->assertEquals('Mass Assignment Test', $user->name);
-        $this->assertEquals('mass@test.com', $user->email);
-        // Verify password was hashed
-        $this->assertTrue(password_verify($plainPassword, $user->password));
+        $this->assertFalse($assigned);
     }
 
     #[Test]
-    public function it_only_updates_specified_attributes()
+    public function it_can_remove_role_from_user()
     {
-        $originalEmail = 'original@example.com';
-        $user = User::factory()->create([
-            'name' => 'Original Name',
-            'email' => $originalEmail,
-        ]);
+        $role = \App\Models\Role::factory()->create();
+        $user = User::factory()->create(['role_id' => $role->id]);
 
-        $this->userRepository->update($user, [
-            'name' => 'Updated Name',
-        ]);
+        $removed = $this->userRepository->removeRole($user->id);
 
-        $updatedUser = $user->fresh();
-        $this->assertEquals('Updated Name', $updatedUser->name);
-        $this->assertEquals($originalEmail, $updatedUser->email);
+        $this->assertTrue($removed);
+        $this->assertNull($user->fresh()->role_id);
+    }
+
+    #[Test]
+    public function it_returns_false_when_remove_role_fails()
+    {
+        $removed = $this->userRepository->removeRole(999);
+
+        $this->assertFalse($removed);
     }
 }

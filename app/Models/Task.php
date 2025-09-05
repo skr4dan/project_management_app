@@ -38,7 +38,7 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected array $fillable = [
+    protected $fillable = [
         'title',
         'description',
         'status',
@@ -49,12 +49,12 @@ class Task extends Model
         'due_date',
     ];
 
-    protected array $casts = [
+    protected $casts = [
         'status'    => TaskStatus::class,
         'priority'  => TaskPriority::class,
         'due_date'  => 'datetime',
-        'created_at'=> 'datetime',
-        'updated_at'=> 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /** -----------------------------
