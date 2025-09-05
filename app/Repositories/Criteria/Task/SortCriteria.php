@@ -10,7 +10,7 @@ use App\Repositories\Criteria\CriteriaInterface;
 class SortCriteria implements CriteriaInterface
 {
     private array $allowedSortFields = [
-        'due_date', 'created_at'
+        'due_date', 'created_at',
     ];
 
     public function __construct(
@@ -23,7 +23,7 @@ class SortCriteria implements CriteriaInterface
 
     private function validateField(): void
     {
-        if (!in_array($this->field, $this->allowedSortFields)) {
+        if (! in_array($this->field, $this->allowedSortFields)) {
             throw new \InvalidArgumentException("Invalid sort field: {$this->field}");
         }
     }
@@ -31,7 +31,7 @@ class SortCriteria implements CriteriaInterface
     private function validateDirection(): void
     {
         $this->direction = strtolower($this->direction);
-        if (!in_array($this->direction, ['asc', 'desc'])) {
+        if (! in_array($this->direction, ['asc', 'desc'])) {
             throw new \InvalidArgumentException("Invalid sort direction: {$this->direction}");
         }
     }

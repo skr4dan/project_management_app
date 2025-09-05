@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class UserApiTest extends TestCase
 {
@@ -242,7 +242,7 @@ class UserApiTest extends TestCase
         // Verify new avatar is accessible in the response
         $userData = $response->json('data');
         $this->assertNotNull($userData['avatar']);
-        $this->assertStringStartsWith(config('app.url') . '/storage/', $userData['avatar']);
+        $this->assertStringStartsWith(config('app.url').'/storage/', $userData['avatar']);
 
         // Verify user was updated in database with new avatar (different from old one)
         $updatedUser = User::find($user->id);
@@ -250,7 +250,6 @@ class UserApiTest extends TestCase
         $this->assertNotNull($updatedUser->avatar);
         $this->assertNotEquals('avatars/old-avatar.jpg', $updatedUser->avatar); // Avatar should have changed
     }
-
 
     #[Test]
     public function admin_can_update_any_user_profile()

@@ -88,7 +88,7 @@ class ProjectController extends Controller
         try {
             $project = $this->projectRepository->findById($id);
 
-            if (!$project) {
+            if (! $project) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Project not found',
@@ -117,7 +117,7 @@ class ProjectController extends Controller
             $user = $this->authService->user();
             $project = $this->projectRepository->findById($id);
 
-            if (!$project) {
+            if (! $project) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Project not found',
@@ -133,7 +133,7 @@ class ProjectController extends Controller
             }
 
             // Prepare update data
-            $updateData = array_filter($request->validated(), function($value) {
+            $updateData = array_filter($request->validated(), function ($value) {
                 return $value !== null;
             });
 
@@ -153,7 +153,7 @@ class ProjectController extends Controller
             $projectDTO = ProjectDTO::fromArray($mergedData);
             $updated = $this->projectRepository->updateFromDTO($id, $projectDTO);
 
-            if (!$updated) {
+            if (! $updated) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to update project',
@@ -184,7 +184,7 @@ class ProjectController extends Controller
             $user = $this->authService->user();
             $project = $this->projectRepository->findById($id);
 
-            if (!$project) {
+            if (! $project) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Project not found',
@@ -203,7 +203,7 @@ class ProjectController extends Controller
             // We'll use the model directly for deletion
             $deleted = $project->delete();
 
-            if (!$deleted) {
+            if (! $deleted) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to delete project',

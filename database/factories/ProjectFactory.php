@@ -17,7 +17,7 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->company() . ' Project',
+            'name' => fake()->company().' Project',
             'description' => fake()->optional(0.8)->paragraph(),
             'status' => fake()->randomElement(['active', 'completed', 'archived']),
             'created_by' => \App\Models\User::factory(),

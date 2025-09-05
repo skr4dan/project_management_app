@@ -11,7 +11,7 @@ namespace App\DTOs\Role;
 readonly class RoleDTO
 {
     /**
-     * @param array<int, string> $permissions
+     * @param  array<int, string>  $permissions
      */
     public function __construct(
         public ?int $id,
@@ -28,8 +28,7 @@ readonly class RoleDTO
     /**
      * Create DTO from array data
      *
-     * @param array<string, mixed> $data
-     * @return self
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -79,9 +78,6 @@ readonly class RoleDTO
 
     /**
      * Check if role has a specific permission
-     *
-     * @param string $permission
-     * @return bool
      */
     public function hasPermission(string $permission): bool
     {
@@ -91,19 +87,17 @@ readonly class RoleDTO
     /**
      * Check if role has any of the given permissions
      *
-     * @param array<int, string> $permissions
-     * @return bool
+     * @param  array<int, string>  $permissions
      */
     public function hasAnyPermission(array $permissions): bool
     {
-        return !empty(array_intersect($permissions, $this->permissions));
+        return ! empty(array_intersect($permissions, $this->permissions));
     }
 
     /**
      * Check if role has all of the given permissions
      *
-     * @param array<int, string> $permissions
-     * @return bool
+     * @param  array<int, string>  $permissions
      */
     public function hasAllPermissions(array $permissions): bool
     {
@@ -114,7 +108,6 @@ readonly class RoleDTO
      * Validate the DTO data
      *
      * @throws \InvalidArgumentException
-     * @return void
      */
     private function validate(): void
     {
@@ -122,7 +115,7 @@ readonly class RoleDTO
             throw new \InvalidArgumentException('Role slug cannot be empty');
         }
 
-        if (!preg_match('/^[a-z][a-z0-9_-]*$/', $this->slug)) {
+        if (! preg_match('/^[a-z][a-z0-9_-]*$/', $this->slug)) {
             throw new \InvalidArgumentException('Role slug must contain only lowercase letters, numbers, hyphens, and underscores, and start with a letter');
         }
 
@@ -132,12 +125,12 @@ readonly class RoleDTO
 
         // Validate permissions format
         foreach ($this->permissions as $permission) {
-            if (!is_string($permission) || empty(trim($permission))) {
+            if (! is_string($permission) || empty(trim($permission))) {
                 throw new \InvalidArgumentException('All permissions must be non-empty strings');
             }
 
-            if (!preg_match('/^[a-z][a-z0-9._]*$/', $permission)) {
-                throw new \InvalidArgumentException('Permission format is invalid: ' . $permission);
+            if (! preg_match('/^[a-z][a-z0-9._]*$/', $permission)) {
+                throw new \InvalidArgumentException('Permission format is invalid: '.$permission);
             }
         }
     }
@@ -145,8 +138,7 @@ readonly class RoleDTO
     /**
      * Create a new instance with modified data
      *
-     * @param array<string, mixed> $changes
-     * @return self
+     * @param  array<string, mixed>  $changes
      */
     public function with(array $changes): self
     {
@@ -165,8 +157,6 @@ readonly class RoleDTO
 
     /**
      * Check if role is active
-     *
-     * @return bool
      */
     public function isActive(): bool
     {
@@ -175,8 +165,6 @@ readonly class RoleDTO
 
     /**
      * Check if role is admin
-     *
-     * @return bool
      */
     public function isAdmin(): bool
     {
@@ -185,8 +173,6 @@ readonly class RoleDTO
 
     /**
      * Check if role is manager
-     *
-     * @return bool
      */
     public function isManager(): bool
     {
@@ -195,8 +181,6 @@ readonly class RoleDTO
 
     /**
      * Check if role is user
-     *
-     * @return bool
      */
     public function isUser(): bool
     {
@@ -205,8 +189,6 @@ readonly class RoleDTO
 
     /**
      * Get permission count
-     *
-     * @return int
      */
     public function getPermissionCount(): int
     {
@@ -236,7 +218,6 @@ readonly class RoleDTO
     /**
      * Check if role has permissions for a specific resource
      *
-     * @param string $resource
      * @return array<int, string>
      */
     public function getResourcePermissions(string $resource): array

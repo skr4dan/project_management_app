@@ -23,8 +23,6 @@ class StatisticsService implements StatisticsServiceInterface
 
     /**
      * Get general statistics for the application.
-     *
-     * @return StatisticsDTO
      */
     public function getStatistics(): StatisticsDTO
     {
@@ -61,25 +59,19 @@ class StatisticsService implements StatisticsServiceInterface
 
     /**
      * Get total number of projects using optimized query.
-     *
-     * @return int
      */
     private function getTotalProjects(): int
     {
-        return $this->cache->remember('stats_total_projects', now()->addMinutes(10), fn () =>
-            Project::query()->count()
+        return $this->cache->remember('stats_total_projects', now()->addMinutes(10), fn () => Project::query()->count()
         );
     }
 
     /**
      * Get total number of tasks using optimized query.
-     *
-     * @return int
      */
     private function getTotalTasks(): int
     {
-        return $this->cache->remember('stats_total_tasks', now()->addMinutes(10), fn () =>
-            Task::query()->count()
+        return $this->cache->remember('stats_total_tasks', now()->addMinutes(10), fn () => Task::query()->count()
         );
     }
 
@@ -103,16 +95,13 @@ class StatisticsService implements StatisticsServiceInterface
 
     /**
      * Get count of overdue tasks using optimized query.
-     *
-     * @return int
      */
     private function getOverdueTasksCount(): int
     {
-        return $this->cache->remember('stats_overdue_tasks', now()->addMinutes(5), fn () =>
-            Task::query()
-                ->where('due_date', '<', now())
-                ->whereNotIn('status', [\App\Enums\Task\TaskStatus::Completed])
-                ->count()
+        return $this->cache->remember('stats_overdue_tasks', now()->addMinutes(5), fn () => Task::query()
+            ->where('due_date', '<', now())
+            ->whereNotIn('status', [\App\Enums\Task\TaskStatus::Completed])
+            ->count()
         );
     }
 
@@ -145,8 +134,7 @@ class StatisticsService implements StatisticsServiceInterface
     /**
      * Clear statistics cache when data changes.
      *
-     * @param array<string> $tags
-     * @return void
+     * @param  array<string>  $tags
      */
     public function clearCache(array $tags = []): void
     {
@@ -156,8 +144,6 @@ class StatisticsService implements StatisticsServiceInterface
 
     /**
      * Get cached statistics without TTL refresh.
-     *
-     * @return StatisticsDTO|null
      */
     public function getCachedStatistics(): ?StatisticsDTO
     {

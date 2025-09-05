@@ -54,5 +54,4 @@ class ProjectIndexRequest extends FormRequest
             'status' => 'project status',
         ];
     }
-
 }

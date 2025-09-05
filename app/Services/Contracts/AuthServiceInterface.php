@@ -13,8 +13,6 @@ interface AuthServiceInterface
     /**
      * Authenticate user and return JWT token.
      *
-     * @param LoginDTO $loginDTO
-     * @return AuthResponseDTO
      * @throws \Exception
      */
     public function login(LoginDTO $loginDTO): AuthResponseDTO;
@@ -22,9 +20,6 @@ interface AuthServiceInterface
     /**
      * Register a new user and return JWT token.
      *
-     * @param RegisterDTO $registerDTO
-     * @param string|null $avatarPath
-     * @return AuthResponseDTO
      * @throws \Exception
      */
     public function register(RegisterDTO $registerDTO, ?string $avatarPath = null): AuthResponseDTO;
@@ -36,8 +31,6 @@ interface AuthServiceInterface
 
     /**
      * Refresh JWT token.
-     *
-     * @return TokenResponseDTO
      */
     public function refresh(): TokenResponseDTO;
 

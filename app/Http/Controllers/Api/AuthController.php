@@ -134,7 +134,7 @@ class AuthController extends Controller
         try {
             $user = $this->authService->user();
 
-            if (!$user) {
+            if (! $user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found',

@@ -20,8 +20,7 @@ readonly class PaginationDTO
     /**
      * Create DTO from array data
      *
-     * @param array<string, mixed> $data
-     * @return self
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -34,8 +33,7 @@ readonly class PaginationDTO
     /**
      * Create DTO from request data
      *
-     * @param array<string, mixed> $data
-     * @return self
+     * @param  array<string, mixed>  $data
      */
     public static function fromRequest(array $data): self
     {
@@ -59,7 +57,6 @@ readonly class PaginationDTO
      * Validate the DTO data
      *
      * @throws \InvalidArgumentException
-     * @return void
      */
     private function validate(): void
     {
@@ -75,8 +72,7 @@ readonly class PaginationDTO
     /**
      * Create a new instance with modified data
      *
-     * @param array<string, mixed> $changes
-     * @return self
+     * @param  array<string, mixed>  $changes
      */
     public function with(array $changes): self
     {

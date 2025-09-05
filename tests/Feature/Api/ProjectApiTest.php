@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\User;
-use App\Models\Role;
-use App\Models\Project;
 use App\Enums\Project\ProjectStatus;
+use App\Models\Project;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class ProjectApiTest extends TestCase
 {

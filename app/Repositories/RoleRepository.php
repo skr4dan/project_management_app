@@ -17,8 +17,6 @@ class RoleRepository implements RoleRepositoryInterface
 {
     /**
      * Create a new role repository instance
-     *
-     * @param Role $role
      */
     public function __construct(
         private Role $role
@@ -26,9 +24,6 @@ class RoleRepository implements RoleRepositoryInterface
 
     /**
      * Find role by ID
-     *
-     * @param int $id
-     * @return Role|null
      */
     public function find(int $id): ?Role
     {
@@ -37,9 +32,6 @@ class RoleRepository implements RoleRepositoryInterface
 
     /**
      * Find role by ID
-     *
-     * @param int $id
-     * @return Role|null
      */
     public function findById(int $id): ?Role
     {
@@ -48,9 +40,6 @@ class RoleRepository implements RoleRepositoryInterface
 
     /**
      * Find role by slug
-     *
-     * @param string $slug
-     * @return Role|null
      */
     public function findBySlug(string $slug): ?Role
     {
@@ -69,9 +58,6 @@ class RoleRepository implements RoleRepositoryInterface
 
     /**
      * Create role from DTO
-     *
-     * @param RoleDTO $roleDTO
-     * @return Role
      */
     public function createFromDTO(RoleDTO $roleDTO): Role
     {
@@ -80,48 +66,41 @@ class RoleRepository implements RoleRepositoryInterface
 
     /**
      * Update role from DTO
-     *
-     * @param int $id
-     * @param RoleDTO $roleDTO
-     * @return bool
      */
     public function updateFromDTO(int $id, RoleDTO $roleDTO): bool
     {
         $role = $this->find($id);
+
         return $role ? $role->update($roleDTO->toModelArray()) : false;
     }
 
     /**
      * Update role permissions
      *
-     * @param int $id
-     * @param array<int, string> $permissions
-     * @return bool
+     * @param  array<int, string>  $permissions
      */
     public function updatePermissions(int $id, array $permissions): bool
     {
         $role = $this->find($id);
+
         return $role ? $role->update(['permissions' => $permissions]) : false;
     }
 
     /**
      * Add permission to role
-     *
-     * @param int $roleId
-     * @param string $permission
-     * @return bool
      */
     public function addPermission(int $roleId, string $permission): bool
     {
         $role = $this->find($roleId);
 
-        if (!$role) {
+        if (! $role) {
             return false;
         }
 
         $permissions = $role->permissions ?? [];
-        if (!in_array($permission, $permissions)) {
+        if (! in_array($permission, $permissions)) {
             $permissions[] = $permission;
+
             return $this->updatePermissions($roleId, $permissions);
         }
 
@@ -130,16 +109,12 @@ class RoleRepository implements RoleRepositoryInterface
 
     /**
      * Remove permission from role
-     *
-     * @param int $roleId
-     * @param string $permission
-     * @return bool
      */
     public function removePermission(int $roleId, string $permission): bool
     {
         $role = $this->find($roleId);
 
-        if (!$role) {
+        if (! $role) {
             return false;
         }
 
@@ -151,16 +126,12 @@ class RoleRepository implements RoleRepositoryInterface
 
     /**
      * Check if role has permission
-     *
-     * @param int $roleId
-     * @param string $permission
-     * @return bool
      */
     public function hasPermission(int $roleId, string $permission): bool
     {
         $role = $this->find($roleId);
 
-        if (!$role) {
+        if (! $role) {
             return false;
         }
 
@@ -169,9 +140,6 @@ class RoleRepository implements RoleRepositoryInterface
 
     /**
      * Get users count for role
-     *
-     * @param int $roleId
-     * @return int
      */
     public function getUsersCount(int $roleId): int
     {
@@ -182,25 +150,21 @@ class RoleRepository implements RoleRepositoryInterface
 
     /**
      * Activate role
-     *
-     * @param int $id
-     * @return bool
      */
     public function activate(int $id): bool
     {
         $role = $this->find($id);
+
         return $role ? $role->update(['is_active' => true]) : false;
     }
 
     /**
      * Deactivate role
-     *
-     * @param int $id
-     * @return bool
      */
     public function deactivate(int $id): bool
     {
         $role = $this->find($id);
+
         return $role ? $role->update(['is_active' => false]) : false;
     }
 }

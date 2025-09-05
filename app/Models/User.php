@@ -28,7 +28,6 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property string|null $remember_token Token for "remember me" functionality
  * @property \Carbon\Carbon $created_at Timestamp when the user was created
  * @property \Carbon\Carbon $updated_at Timestamp when the user was last updated
- *
  * @property-read Role|null $role The role this user belongs to
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project> $projects Projects created by this user
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task> $createdTasks Tasks created by this user

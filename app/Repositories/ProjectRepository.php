@@ -19,8 +19,6 @@ class ProjectRepository implements ProjectRepositoryInterface
 {
     /**
      * Create a new project repository instance
-     *
-     * @param Project $project
      */
     public function __construct(
         private Project $project
@@ -28,9 +26,6 @@ class ProjectRepository implements ProjectRepositoryInterface
 
     /**
      * Find project by ID
-     *
-     * @param int $id
-     * @return Project|null
      */
     public function find(int $id): ?Project
     {
@@ -39,9 +34,6 @@ class ProjectRepository implements ProjectRepositoryInterface
 
     /**
      * Find project by ID
-     *
-     * @param int $id
-     * @return Project|null
      */
     public function findById(int $id): ?Project
     {
@@ -51,7 +43,6 @@ class ProjectRepository implements ProjectRepositoryInterface
     /**
      * Get projects by owner
      *
-     * @param int $userId
      * @return Collection<int, Project>
      */
     public function getByOwner(int $userId): Collection
@@ -62,7 +53,6 @@ class ProjectRepository implements ProjectRepositoryInterface
     /**
      * Get projects by status
      *
-     * @param ProjectStatus $status
      * @return Collection<int, Project>
      */
     public function getByStatus(ProjectStatus $status): Collection
@@ -92,9 +82,6 @@ class ProjectRepository implements ProjectRepositoryInterface
 
     /**
      * Create project from DTO
-     *
-     * @param ProjectDTO $projectDTO
-     * @return Project
      */
     public function createFromDTO(ProjectDTO $projectDTO): Project
     {
@@ -103,35 +90,26 @@ class ProjectRepository implements ProjectRepositoryInterface
 
     /**
      * Update project from DTO
-     *
-     * @param int $id
-     * @param ProjectDTO $projectDTO
-     * @return bool
      */
     public function updateFromDTO(int $id, ProjectDTO $projectDTO): bool
     {
         $project = $this->find($id);
+
         return $project ? $project->update($projectDTO->toModelArray()) : false;
     }
 
     /**
      * Update project status
-     *
-     * @param int $id
-     * @param ProjectStatus $status
-     * @return bool
      */
     public function updateStatus(int $id, ProjectStatus $status): bool
     {
         $project = $this->find($id);
+
         return $project ? $project->update(['status' => $status->value]) : false;
     }
 
     /**
      * Get project with tasks count
-     *
-     * @param int $id
-     * @return Project|null
      */
     public function getWithTasksCount(int $id): ?Project
     {
@@ -141,14 +119,14 @@ class ProjectRepository implements ProjectRepositoryInterface
     /**
      * Get projects with tasks statistics
      *
-     * @param int|null $userId Optional user filter
+     * @param  int|null  $userId  Optional user filter
      * @return Collection<int, Project>
      */
     public function getWithStatistics(?int $userId = null): Collection
     {
         $query = $this->project->with(['tasks' => function ($query) {
             $query->selectRaw('project_id, status, COUNT(*) as count')
-                  ->groupBy('project_id', 'status');
+                ->groupBy('project_id', 'status');
         }]);
 
         if ($userId) {
@@ -160,15 +138,12 @@ class ProjectRepository implements ProjectRepositoryInterface
 
     /**
      * Get project completion percentage
-     *
-     * @param int $id
-     * @return float
      */
     public function getCompletionPercentage(int $id): float
     {
         $project = $this->getWithTasksCount($id);
 
-        if (!$project || $project->tasks_count === 0) {
+        if (! $project || $project->tasks_count === 0) {
             return 0.0;
         }
 
@@ -182,8 +157,7 @@ class ProjectRepository implements ProjectRepositoryInterface
     /**
      * Search projects by name or description
      *
-     * @param string $query
-     * @param int|null $userId Optional user filter
+     * @param  int|null  $userId  Optional user filter
      * @return Collection<int, Project>
      */
     public function search(string $query, ?int $userId = null): Collection
@@ -191,7 +165,7 @@ class ProjectRepository implements ProjectRepositoryInterface
         $builder = $this->project
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('description', 'like', "%{$query}%");
+                    ->orWhere('description', 'like', "%{$query}%");
             });
 
         if ($userId) {
@@ -204,7 +178,6 @@ class ProjectRepository implements ProjectRepositoryInterface
     /**
      * Get user's project statistics
      *
-     * @param int $userId
      * @return array<string, int>
      */
     public function getUserProjectStatistics(int $userId): array
@@ -221,9 +194,6 @@ class ProjectRepository implements ProjectRepositoryInterface
 
     /**
      * Archive project
-     *
-     * @param int $id
-     * @return bool
      */
     public function archive(int $id): bool
     {
@@ -232,9 +202,6 @@ class ProjectRepository implements ProjectRepositoryInterface
 
     /**
      * Complete project
-     *
-     * @param int $id
-     * @return bool
      */
     public function complete(int $id): bool
     {

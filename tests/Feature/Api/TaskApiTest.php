@@ -2,15 +2,15 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\User;
-use App\Models\Role;
-use App\Models\Project;
-use App\Models\Task;
-use App\Enums\Task\TaskStatus;
 use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
+use App\Models\Project;
+use App\Models\Role;
+use App\Models\Task;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class TaskApiTest extends TestCase
 {
@@ -23,7 +23,7 @@ class TaskApiTest extends TestCase
         $project = Project::factory()->create(['created_by' => $user->id]);
         $tasks = Task::factory()->count(3)->create([
             'project_id' => $project->id,
-            'created_by' => $user->id
+            'created_by' => $user->id,
         ]);
 
         $token = $this->authenticateUser($user);
@@ -582,7 +582,7 @@ class TaskApiTest extends TestCase
         // Create 10 tasks
         Task::factory()->count(10)->create([
             'project_id' => $project->id,
-            'created_by' => $user->id
+            'created_by' => $user->id,
         ]);
 
         $token = $this->authenticateUser($user);
@@ -617,7 +617,7 @@ class TaskApiTest extends TestCase
         // Create 25 tasks to have multiple pages
         $tasks = Task::factory()->count(25)->create([
             'project_id' => $project->id,
-            'created_by' => $user->id
+            'created_by' => $user->id,
         ]);
 
         $token = $this->authenticateUser($user);
@@ -735,7 +735,7 @@ class TaskApiTest extends TestCase
         // Create 23 tasks (will result in 2 pages with per_page=15, and 1 page with per_page=10)
         Task::factory()->count(23)->create([
             'project_id' => $project->id,
-            'created_by' => $user->id
+            'created_by' => $user->id,
         ]);
 
         $token = $this->authenticateUser($user);
@@ -765,7 +765,7 @@ class TaskApiTest extends TestCase
         // Create only 5 tasks
         Task::factory()->count(5)->create([
             'project_id' => $project->id,
-            'created_by' => $user->id
+            'created_by' => $user->id,
         ]);
 
         $token = $this->authenticateUser($user);

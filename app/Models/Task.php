@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\Project;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Enums\Task\TaskPriority;
 use App\Enums\Task\TaskStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Task Model
@@ -27,7 +25,6 @@ use App\Enums\Task\TaskStatus;
  * @property \Carbon\Carbon|null $due_date Deadline for task completion
  * @property \Carbon\Carbon $created_at Timestamp when the task was created
  * @property \Carbon\Carbon $updated_at Timestamp when the task was last updated
- *
  * @property-read Project $project The project this task belongs to
  * @property-read User|null $assignedTo The user this task is assigned to
  * @property-read User $createdBy The user who created this task
@@ -50,9 +47,9 @@ class Task extends Model
     ];
 
     protected $casts = [
-        'status'    => TaskStatus::class,
-        'priority'  => TaskPriority::class,
-        'due_date'  => 'datetime',
+        'status' => TaskStatus::class,
+        'priority' => TaskPriority::class,
+        'due_date' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

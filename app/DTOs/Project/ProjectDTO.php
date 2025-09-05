@@ -27,8 +27,7 @@ readonly class ProjectDTO
     /**
      * Create DTO from array data
      *
-     * @param array<string, mixed> $data
-     * @return self
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -80,8 +79,6 @@ readonly class ProjectDTO
 
     /**
      * Check if project is active
-     *
-     * @return bool
      */
     public function isActive(): bool
     {
@@ -90,8 +87,6 @@ readonly class ProjectDTO
 
     /**
      * Check if project is completed
-     *
-     * @return bool
      */
     public function isCompleted(): bool
     {
@@ -100,8 +95,6 @@ readonly class ProjectDTO
 
     /**
      * Check if project is archived
-     *
-     * @return bool
      */
     public function isArchived(): bool
     {
@@ -112,7 +105,6 @@ readonly class ProjectDTO
      * Validate the DTO data
      *
      * @throws \InvalidArgumentException
-     * @return void
      */
     private function validate(): void
     {
@@ -132,8 +124,7 @@ readonly class ProjectDTO
     /**
      * Create a new instance with modified data
      *
-     * @param array<string, mixed> $changes
-     * @return self
+     * @param  array<string, mixed>  $changes
      */
     public function with(array $changes): self
     {
@@ -152,8 +143,6 @@ readonly class ProjectDTO
 
     /**
      * Get project status display name
-     *
-     * @return string
      */
     public function getStatusDisplayName(): string
     {
@@ -166,8 +155,6 @@ readonly class ProjectDTO
 
     /**
      * Get project slug for URLs
-     *
-     * @return string
      */
     public function getSlug(): string
     {
@@ -176,8 +163,6 @@ readonly class ProjectDTO
 
     /**
      * Check if project can be edited
-     *
-     * @return bool
      */
     public function canBeEdited(): bool
     {
@@ -186,8 +171,6 @@ readonly class ProjectDTO
 
     /**
      * Check if project can have new tasks added
-     *
-     * @return bool
      */
     public function canAddTasks(): bool
     {
@@ -196,8 +179,6 @@ readonly class ProjectDTO
 
     /**
      * Check if project can be deleted
-     *
-     * @return bool
      */
     public function canBeDeleted(): bool
     {
@@ -206,16 +187,14 @@ readonly class ProjectDTO
 
     /**
      * Get project age in days
-     *
-     * @return int
      */
     public function getAgeInDays(): int
     {
-        if (!$this->created_at) {
+        if (! $this->created_at) {
             return 0;
         }
 
-        $now = new \DateTime();
+        $now = new \DateTime;
         $interval = $this->created_at->diff($now);
 
         return $interval->days;
@@ -223,17 +202,15 @@ readonly class ProjectDTO
 
     /**
      * Get short description (first 100 characters)
-     *
-     * @return string
      */
     public function getShortDescription(): string
     {
-        if (!$this->description) {
+        if (! $this->description) {
             return '';
         }
 
         return strlen($this->description) > 100
-            ? substr($this->description, 0, 100) . '...'
+            ? substr($this->description, 0, 100).'...'
             : $this->description;
     }
 }

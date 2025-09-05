@@ -17,7 +17,7 @@ class UserCriteria implements CriteriaInterface
     {
         return $query->where(function ($q) {
             $q->where('created_by', $this->userId)
-              ->orWhere('assigned_to', $this->userId);
+                ->orWhere('assigned_to', $this->userId);
         });
     }
 }

@@ -19,8 +19,7 @@ readonly class TokenResponseDTO
     /**
      * Create DTO from token data
      *
-     * @param array{access_token: string, token_type: string, expires_in: int} $data
-     * @return self
+     * @param  array{access_token: string, token_type: string, expires_in: int}  $data
      */
     public static function fromArray(array $data): self
     {

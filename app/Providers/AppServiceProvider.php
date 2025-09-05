@@ -2,19 +2,19 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\ProjectRepositoryInterface;
+use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Repositories\Contracts\TaskRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\ProjectRepository;
+use App\Repositories\RoleRepository;
+use App\Repositories\TaskRepository;
+use App\Repositories\UserRepository;
 use App\Services\AuthService;
 use App\Services\Contracts\AuthServiceInterface;
 use App\Services\Contracts\StatisticsServiceInterface;
 use App\Services\StatisticsService;
 use Illuminate\Contracts\Cache\Repository;
-use App\Repositories\Contracts\UserRepositoryInterface;
-use App\Repositories\Contracts\ProjectRepositoryInterface;
-use App\Repositories\Contracts\RoleRepositoryInterface;
-use App\Repositories\Contracts\TaskRepositoryInterface;
-use App\Repositories\UserRepository;
-use App\Repositories\ProjectRepository;
-use App\Repositories\RoleRepository;
-use App\Repositories\TaskRepository;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider

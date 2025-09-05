@@ -6,8 +6,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Repositories\RoleRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class RoleRepositoryTest extends TestCase
 {
@@ -19,7 +19,7 @@ class RoleRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->roleRepository = new RoleRepository(new \App\Models\Role());
+        $this->roleRepository = new RoleRepository(new \App\Models\Role);
     }
 
     #[Test]
@@ -214,7 +214,7 @@ class RoleRepositoryTest extends TestCase
 
         $this->assertTrue($added);
         $freshPermissions = $role->fresh()->permissions;
-        $this->assertCount(1, array_filter($freshPermissions, fn($p) => $p === 'users.view'));
+        $this->assertCount(1, array_filter($freshPermissions, fn ($p) => $p === 'users.view'));
     }
 
     #[Test]

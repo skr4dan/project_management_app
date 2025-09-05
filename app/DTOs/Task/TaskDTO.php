@@ -32,8 +32,7 @@ readonly class TaskDTO
     /**
      * Create DTO from array data
      *
-     * @param array<string, mixed> $data
-     * @return self
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -95,22 +94,18 @@ readonly class TaskDTO
 
     /**
      * Check if task is overdue
-     *
-     * @return bool
      */
     public function isOverdue(): bool
     {
-        if (!$this->due_date) {
+        if (! $this->due_date) {
             return false;
         }
 
-        return $this->due_date < new \DateTime() && $this->status !== TaskStatus::Completed;
+        return $this->due_date < new \DateTime && $this->status !== TaskStatus::Completed;
     }
 
     /**
      * Check if task is completed
-     *
-     * @return bool
      */
     public function isCompleted(): bool
     {
@@ -119,8 +114,6 @@ readonly class TaskDTO
 
     /**
      * Check if task is in progress
-     *
-     * @return bool
      */
     public function isInProgress(): bool
     {
@@ -129,8 +122,6 @@ readonly class TaskDTO
 
     /**
      * Check if task is pending
-     *
-     * @return bool
      */
     public function isPending(): bool
     {
@@ -139,8 +130,6 @@ readonly class TaskDTO
 
     /**
      * Check if task has high priority
-     *
-     * @return bool
      */
     public function isHighPriority(): bool
     {
@@ -151,7 +140,6 @@ readonly class TaskDTO
      * Validate the DTO data
      *
      * @throws \InvalidArgumentException
-     * @return void
      */
     private function validate(): void
     {
@@ -159,7 +147,7 @@ readonly class TaskDTO
             throw new \InvalidArgumentException('Task title cannot be empty');
         }
 
-        if ($this->due_date && $this->due_date < new \DateTime()) {
+        if ($this->due_date && $this->due_date < new \DateTime) {
             throw new \InvalidArgumentException('Due date cannot be in the past');
         }
 
@@ -175,8 +163,7 @@ readonly class TaskDTO
     /**
      * Create a new instance with modified data
      *
-     * @param array<string, mixed> $changes
-     * @return self
+     * @param  array<string, mixed>  $changes
      */
     public function with(array $changes): self
     {
@@ -199,16 +186,14 @@ readonly class TaskDTO
 
     /**
      * Get days until due date
-     *
-     * @return int|null
      */
     public function getDaysUntilDue(): ?int
     {
-        if (!$this->due_date) {
+        if (! $this->due_date) {
             return null;
         }
 
-        $now = new \DateTime();
+        $now = new \DateTime;
         $interval = $now->diff($this->due_date);
 
         return $interval->days * ($interval->invert ? -1 : 1);
@@ -216,12 +201,11 @@ readonly class TaskDTO
 
     /**
      * Check if task is urgent (high priority and due soon)
-     *
-     * @return bool
      */
     public function isUrgent(): bool
     {
         $daysUntilDue = $this->getDaysUntilDue();
+
         return $this->priority === TaskPriority::High &&
                $daysUntilDue !== null &&
                $daysUntilDue <= 3 &&
@@ -230,8 +214,6 @@ readonly class TaskDTO
 
     /**
      * Check if task can be started
-     *
-     * @return bool
      */
     public function canBeStarted(): bool
     {
@@ -241,8 +223,6 @@ readonly class TaskDTO
 
     /**
      * Check if task can be completed
-     *
-     * @return bool
      */
     public function canBeCompleted(): bool
     {
@@ -251,8 +231,6 @@ readonly class TaskDTO
 
     /**
      * Check if task can be reassigned
-     *
-     * @return bool
      */
     public function canBeReassigned(): bool
     {
@@ -261,16 +239,14 @@ readonly class TaskDTO
 
     /**
      * Get task age in days
-     *
-     * @return int
      */
     public function getAgeInDays(): int
     {
-        if (!$this->created_at) {
+        if (! $this->created_at) {
             return 0;
         }
 
-        $now = new \DateTime();
+        $now = new \DateTime;
         $interval = $this->created_at->diff($now);
 
         return $interval->days;
@@ -278,8 +254,6 @@ readonly class TaskDTO
 
     /**
      * Check if task is assigned
-     *
-     * @return bool
      */
     public function isAssigned(): bool
     {
@@ -288,8 +262,6 @@ readonly class TaskDTO
 
     /**
      * Get task priority level (1-3, where 3 is highest)
-     *
-     * @return int
      */
     public function getPriorityLevel(): int
     {

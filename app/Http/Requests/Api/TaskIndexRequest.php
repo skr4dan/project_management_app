@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Api;
 
-use App\Enums\Task\TaskStatus;
 use App\Enums\Task\TaskPriority;
+use App\Enums\Task\TaskStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -52,11 +52,11 @@ class TaskIndexRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'status.in' => 'Status must be one of: ' . implode(', ', array_column(TaskStatus::cases(), 'value')),
-            'priority.in' => 'Priority must be one of: ' . implode(', ', array_column(TaskPriority::cases(), 'value')),
+            'status.in' => 'Status must be one of: '.implode(', ', array_column(TaskStatus::cases(), 'value')),
+            'priority.in' => 'Priority must be one of: '.implode(', ', array_column(TaskPriority::cases(), 'value')),
             'project_id.exists' => 'Selected project does not exist',
             'assigned_to.exists' => 'Selected user does not exist',
-            'sort_by.in' => 'Sort by must be one of: ' . implode(', ', $this->getSortableFields()),
+            'sort_by.in' => 'Sort by must be one of: '.implode(', ', $this->getSortableFields()),
             'sort_order.in' => 'Sort order must be asc or desc',
         ];
     }

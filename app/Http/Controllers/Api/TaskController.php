@@ -103,7 +103,7 @@ class TaskController extends Controller
         try {
             $task = $this->taskRepository->findById($id);
 
-            if (!$task) {
+            if (! $task) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Task not found',
@@ -132,7 +132,7 @@ class TaskController extends Controller
             $user = $this->authService->user();
             $task = $this->taskRepository->findById($id);
 
-            if (!$task) {
+            if (! $task) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Task not found',
@@ -144,7 +144,7 @@ class TaskController extends Controller
                         ($task->created_by === $user->id && $task->assigned_to === null) ||
                         $user->role->slug === 'admin';
 
-            if (!$canUpdate) {
+            if (! $canUpdate) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You can only update tasks assigned to you or created by you',
@@ -152,7 +152,7 @@ class TaskController extends Controller
             }
 
             // Prepare update data
-            $updateData = array_filter($request->validated(), function($value) {
+            $updateData = array_filter($request->validated(), function ($value) {
                 return $value !== null;
             });
 
@@ -176,7 +176,7 @@ class TaskController extends Controller
             $taskDTO = TaskDTO::fromArray($mergedData);
             $updated = $this->taskRepository->updateFromDTO($id, $taskDTO);
 
-            if (!$updated) {
+            if (! $updated) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to update task',
@@ -207,7 +207,7 @@ class TaskController extends Controller
             $user = $this->authService->user();
             $task = $this->taskRepository->findById($id);
 
-            if (!$task) {
+            if (! $task) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Task not found',
@@ -226,7 +226,7 @@ class TaskController extends Controller
             // We'll use the model directly for deletion
             $deleted = $task->delete();
 
-            if (!$deleted) {
+            if (! $deleted) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to delete task',

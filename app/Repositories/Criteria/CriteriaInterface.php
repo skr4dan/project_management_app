@@ -12,7 +12,7 @@ interface CriteriaInterface
     /**
      * Apply the criteria to the query builder
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function apply($query);

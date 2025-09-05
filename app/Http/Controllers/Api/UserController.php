@@ -7,9 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use App\Services\Contracts\AuthServiceInterface;
 
 class UserController extends Controller
 {
@@ -47,7 +47,7 @@ class UserController extends Controller
         try {
             $user = $this->userRepository->findById($id);
 
-            if (!$user) {
+            if (! $user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found',
@@ -77,7 +77,7 @@ class UserController extends Controller
 
             $targetUser = $this->userRepository->findById($id);
 
-            if (!$targetUser) {
+            if (! $targetUser) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found',
@@ -95,7 +95,7 @@ class UserController extends Controller
             $user = $targetUser;
 
             // Prepare update data
-            $updateData = array_filter($request->validated(), function($value) {
+            $updateData = array_filter($request->validated(), function ($value) {
                 return $value !== null;
             });
 
@@ -131,7 +131,7 @@ class UserController extends Controller
             $userDTO = UserDTO::fromArray($mergedData);
             $updated = $this->userRepository->updateFromDTO($id, $userDTO);
 
-            if (!$updated) {
+            if (! $updated) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to update user',

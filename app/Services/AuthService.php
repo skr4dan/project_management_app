@@ -8,9 +8,9 @@ use App\DTOs\Auth\RegisterDTO;
 use App\DTOs\Auth\TokenResponseDTO;
 use App\DTOs\User\UserDTO;
 use App\Models\User;
-use App\Services\Contracts\AuthServiceInterface;
-use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -24,15 +24,13 @@ class AuthService implements AuthServiceInterface
     /**
      * Authenticate user and return JWT token.
      *
-     * @param LoginDTO $loginDTO
-     * @return AuthResponseDTO
      * @throws \Exception
      */
     public function login(LoginDTO $loginDTO): AuthResponseDTO
     {
         $token = JWTAuth::attempt($loginDTO->toArray());
 
-        if (!$token) {
+        if (! $token) {
             throw new \Exception('Invalid credentials');
         }
 
@@ -50,9 +48,6 @@ class AuthService implements AuthServiceInterface
     /**
      * Register a new user and return JWT token.
      *
-     * @param RegisterDTO $registerDTO
-     * @param string|null $avatarPath
-     * @return AuthResponseDTO
      * @throws \Exception
      */
     public function register(RegisterDTO $registerDTO, ?string $avatarPath = null): AuthResponseDTO
@@ -64,7 +59,7 @@ class AuthService implements AuthServiceInterface
 
         // Get the default 'user' role
         $defaultRole = $this->roleRepository->findBySlug('user');
-        if (!$defaultRole) {
+        if (! $defaultRole) {
             throw new \Exception('Default user role not found. Please run database migrations.');
         }
 
@@ -111,8 +106,6 @@ class AuthService implements AuthServiceInterface
 
     /**
      * Refresh JWT token.
-     *
-     * @return TokenResponseDTO
      */
     public function refresh(): TokenResponseDTO
     {

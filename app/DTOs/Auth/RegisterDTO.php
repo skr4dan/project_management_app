@@ -24,8 +24,7 @@ readonly class RegisterDTO
     /**
      * Create DTO from array data
      *
-     * @param array<string, mixed> $data
-     * @return self
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -68,7 +67,7 @@ readonly class RegisterDTO
             throw new \InvalidArgumentException('Email is required');
         }
 
-        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email format');
         }
 

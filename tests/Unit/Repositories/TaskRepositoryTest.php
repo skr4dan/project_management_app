@@ -9,10 +9,9 @@ use App\Models\Task;
 use App\Models\User;
 use App\Repositories\TaskRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
-use Carbon\Carbon;
+use Tests\TestCase;
 
 class TaskRepositoryTest extends TestCase
 {
@@ -24,7 +23,7 @@ class TaskRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->taskRepository = new TaskRepository(new \App\Models\Task());
+        $this->taskRepository = new TaskRepository(new \App\Models\Task);
     }
 
     #[Test]
@@ -130,15 +129,15 @@ class TaskRepositoryTest extends TestCase
     {
         Task::factory()->count(2)->create([
             'due_date' => now()->subDays(1),
-            'status' => TaskStatus::Pending->value
+            'status' => TaskStatus::Pending->value,
         ]);
         Task::factory()->count(1)->create([
             'due_date' => now()->addDays(1),
-            'status' => TaskStatus::Pending->value
+            'status' => TaskStatus::Pending->value,
         ]);
         Task::factory()->count(1)->create([
             'due_date' => now()->subDays(1),
-            'status' => TaskStatus::Completed->value // Should not be included
+            'status' => TaskStatus::Completed->value, // Should not be included
         ]);
 
         $tasks = $this->taskRepository->getOverdueTasks();
@@ -152,11 +151,11 @@ class TaskRepositoryTest extends TestCase
     {
         Task::factory()->count(2)->create([
             'due_date' => now()->addDays(3),
-            'status' => TaskStatus::Pending->value
+            'status' => TaskStatus::Pending->value,
         ]);
         Task::factory()->count(1)->create([
             'due_date' => now()->addDays(10),
-            'status' => TaskStatus::Pending->value
+            'status' => TaskStatus::Pending->value,
         ]);
 
         $tasks = $this->taskRepository->getTasksDueSoon(5);
@@ -336,11 +335,11 @@ class TaskRepositoryTest extends TestCase
         $project = Project::factory()->create();
         Task::factory()->count(2)->create([
             'project_id' => $project->id,
-            'status' => TaskStatus::Completed->value
+            'status' => TaskStatus::Completed->value,
         ]);
         Task::factory()->count(3)->create([
             'project_id' => $project->id,
-            'status' => TaskStatus::Pending->value
+            'status' => TaskStatus::Pending->value,
         ]);
 
         $stats = $this->taskRepository->getProjectStatistics($project->id);
@@ -361,11 +360,11 @@ class TaskRepositoryTest extends TestCase
         $user = User::factory()->create();
         Task::factory()->count(2)->create([
             'assigned_to' => $user->id,
-            'status' => TaskStatus::Completed->value
+            'status' => TaskStatus::Completed->value,
         ]);
         Task::factory()->count(1)->create([
             'assigned_to' => $user->id,
-            'status' => TaskStatus::InProgress->value
+            'status' => TaskStatus::InProgress->value,
         ]);
 
         $stats = $this->taskRepository->getUserStatistics($user->id);
@@ -512,27 +511,27 @@ class TaskRepositoryTest extends TestCase
             'project_id' => $project->id,
             'title' => 'First Task',
             'due_date' => now()->addDays(1),
-            'created_at' => now()->subDays(2)
+            'created_at' => now()->subDays(2),
         ]);
 
         $secondTask = Task::factory()->create([
             'project_id' => $project->id,
             'title' => 'Second Task',
             'due_date' => now()->addDays(2),
-            'created_at' => now()->subDay()
+            'created_at' => now()->subDay(),
         ]);
 
         $thirdTask = Task::factory()->create([
             'project_id' => $project->id,
             'title' => 'Third Task',
             'due_date' => now()->addDays(3),
-            'created_at' => now()
+            'created_at' => now(),
         ]);
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter([
             'project_id' => $project->id,
             'sort_by' => $sortField,
-            'sort_order' => $sortOrder
+            'sort_order' => $sortOrder,
         ]);
 
         $paginator = $this->taskRepository->filter($filter);

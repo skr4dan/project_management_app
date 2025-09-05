@@ -8,8 +8,8 @@ use App\Models\Task;
 use App\Models\User;
 use App\Repositories\ProjectRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class ProjectRepositoryTest extends TestCase
 {
@@ -21,7 +21,7 @@ class ProjectRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->projectRepository = new ProjectRepository(new \App\Models\Project());
+        $this->projectRepository = new ProjectRepository(new \App\Models\Project);
     }
 
     #[Test]
@@ -260,11 +260,11 @@ class ProjectRepositoryTest extends TestCase
         $project = Project::factory()->create();
         Task::factory()->count(2)->create([
             'project_id' => $project->id,
-            'status' => 'completed'
+            'status' => 'completed',
         ]);
         Task::factory()->count(3)->create([
             'project_id' => $project->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         $percentage = $this->projectRepository->getCompletionPercentage($project->id);
@@ -288,11 +288,11 @@ class ProjectRepositoryTest extends TestCase
         $user = User::factory()->create();
         Project::factory()->create([
             'name' => 'Laravel Project',
-            'created_by' => $user->id
+            'created_by' => $user->id,
         ]);
         Project::factory()->create([
             'name' => 'React Project',
-            'created_by' => $user->id
+            'created_by' => $user->id,
         ]);
         Project::factory()->create(['name' => 'Vue Project']); // Different user
 
@@ -330,11 +330,11 @@ class ProjectRepositoryTest extends TestCase
         $user = User::factory()->create();
         Project::factory()->count(2)->create([
             'created_by' => $user->id,
-            'status' => ProjectStatus::Active->value
+            'status' => ProjectStatus::Active->value,
         ]);
         Project::factory()->count(1)->create([
             'created_by' => $user->id,
-            'status' => ProjectStatus::Completed->value
+            'status' => ProjectStatus::Completed->value,
         ]);
 
         $stats = $this->projectRepository->getUserProjectStatistics($user->id);

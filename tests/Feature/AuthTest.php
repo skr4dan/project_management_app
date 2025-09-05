@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
@@ -102,11 +102,11 @@ class AuthTest extends TestCase
         // Verify avatar is accessible in the response
         $userData = $response->json('data.user');
         $this->assertNotNull($userData['avatar']);
-        $this->assertStringStartsWith(config('app.url') . '/storage/', $userData['avatar']);
+        $this->assertStringStartsWith(config('app.url').'/storage/', $userData['avatar']);
         $this->assertStringContainsString('avatars/', $userData['avatar']);
 
         // Verify avatar file was stored
-        $avatarPath = str_replace(config('app.url') . '/storage/', '', $userData['avatar']);
+        $avatarPath = str_replace(config('app.url').'/storage/', '', $userData['avatar']);
         $this->assertTrue(\Illuminate\Support\Facades\Storage::disk('public')->exists($avatarPath));
 
         // Verify user was created with avatar in database

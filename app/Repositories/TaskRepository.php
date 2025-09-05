@@ -8,7 +8,6 @@ use App\Enums\Task\TaskPriority;
 use App\Enums\Task\TaskStatus;
 use App\Models\Task;
 use App\Repositories\Contracts\TaskRepositoryInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -21,8 +20,6 @@ class TaskRepository implements TaskRepositoryInterface
 {
     /**
      * Create a new task repository instance
-     *
-     * @param Task $task
      */
     public function __construct(
         private Task $task
@@ -30,9 +27,6 @@ class TaskRepository implements TaskRepositoryInterface
 
     /**
      * Find task by ID
-     *
-     * @param int $id
-     * @return Task|null
      */
     public function find(int $id): ?Task
     {
@@ -41,9 +35,6 @@ class TaskRepository implements TaskRepositoryInterface
 
     /**
      * Find task by ID
-     *
-     * @param int $id
-     * @return Task|null
      */
     public function findById(int $id): ?Task
     {
@@ -53,7 +44,6 @@ class TaskRepository implements TaskRepositoryInterface
     /**
      * Get tasks by project
      *
-     * @param int $projectId
      * @return Collection<int, Task>
      */
     public function getByProject(int $projectId): Collection
@@ -64,7 +54,6 @@ class TaskRepository implements TaskRepositoryInterface
     /**
      * Get tasks by assignee
      *
-     * @param int $userId
      * @return Collection<int, Task>
      */
     public function getByAssignee(int $userId): Collection
@@ -75,7 +64,6 @@ class TaskRepository implements TaskRepositoryInterface
     /**
      * Get tasks by creator
      *
-     * @param int $userId
      * @return Collection<int, Task>
      */
     public function getByCreator(int $userId): Collection
@@ -86,7 +74,6 @@ class TaskRepository implements TaskRepositoryInterface
     /**
      * Get tasks by status
      *
-     * @param TaskStatus $status
      * @return Collection<int, Task>
      */
     public function getByStatus(TaskStatus $status): Collection
@@ -97,7 +84,6 @@ class TaskRepository implements TaskRepositoryInterface
     /**
      * Get tasks by priority
      *
-     * @param TaskPriority $priority
      * @return Collection<int, Task>
      */
     public function getByPriority(TaskPriority $priority): Collection
@@ -121,7 +107,6 @@ class TaskRepository implements TaskRepositoryInterface
     /**
      * Get tasks due soon (within next N days)
      *
-     * @param int $days
      * @return Collection<int, Task>
      */
     public function getTasksDueSoon(int $days = 7): Collection
@@ -135,9 +120,6 @@ class TaskRepository implements TaskRepositoryInterface
 
     /**
      * Create task from DTO
-     *
-     * @param TaskDTO $taskDTO
-     * @return Task
      */
     public function createFromDTO(TaskDTO $taskDTO): Task
     {
@@ -146,72 +128,57 @@ class TaskRepository implements TaskRepositoryInterface
 
     /**
      * Update task from DTO
-     *
-     * @param int $id
-     * @param TaskDTO $taskDTO
-     * @return bool
      */
     public function updateFromDTO(int $id, TaskDTO $taskDTO): bool
     {
         $task = $this->find($id);
+
         return $task ? $task->update($taskDTO->toModelArray()) : false;
     }
 
     /**
      * Update task status
-     *
-     * @param int $id
-     * @param TaskStatus $status
-     * @return bool
      */
     public function updateStatus(int $id, TaskStatus $status): bool
     {
         $task = $this->find($id);
+
         return $task ? $task->update(['status' => $status->value]) : false;
     }
 
     /**
      * Update task priority
-     *
-     * @param int $id
-     * @param TaskPriority $priority
-     * @return bool
      */
     public function updatePriority(int $id, TaskPriority $priority): bool
     {
         $task = $this->find($id);
+
         return $task ? $task->update(['priority' => $priority->value]) : false;
     }
 
     /**
      * Assign task to user
-     *
-     * @param int $taskId
-     * @param int $userId
-     * @return bool
      */
     public function assignToUser(int $taskId, int $userId): bool
     {
         $task = $this->find($taskId);
+
         return $task ? $task->update(['assigned_to' => $userId]) : false;
     }
 
     /**
      * Unassign task from user
-     *
-     * @param int $taskId
-     * @return bool
      */
     public function unassignFromUser(int $taskId): bool
     {
         $task = $this->find($taskId);
+
         return $task ? $task->update(['assigned_to' => null]) : false;
     }
 
     /**
      * Get tasks statistics for project
      *
-     * @param int $projectId
      * @return array<string, int>
      */
     public function getProjectStatistics(int $projectId): array
@@ -223,14 +190,13 @@ class TaskRepository implements TaskRepositoryInterface
             'pending' => $tasks->where('status', TaskStatus::Pending)->count(),
             'in_progress' => $tasks->where('status', TaskStatus::InProgress)->count(),
             'completed' => $tasks->where('status', TaskStatus::Completed)->count(),
-            'overdue' => $tasks->filter(fn($task) => $task->due_date && $task->due_date < now() && $task->status !== TaskStatus::Completed)->count(),
+            'overdue' => $tasks->filter(fn ($task) => $task->due_date && $task->due_date < now() && $task->status !== TaskStatus::Completed)->count(),
         ];
     }
 
     /**
      * Get user's task statistics
      *
-     * @param int $userId
      * @return array<string, int>
      */
     public function getUserStatistics(int $userId): array
@@ -242,22 +208,17 @@ class TaskRepository implements TaskRepositoryInterface
             'pending' => $tasks->where('status', TaskStatus::Pending)->count(),
             'in_progress' => $tasks->where('status', TaskStatus::InProgress)->count(),
             'completed' => $tasks->where('status', TaskStatus::Completed)->count(),
-            'overdue' => $tasks->filter(fn($task) => $task->due_date && $task->due_date < now() && $task->status !== TaskStatus::Completed)->count(),
+            'overdue' => $tasks->filter(fn ($task) => $task->due_date && $task->due_date < now() && $task->status !== TaskStatus::Completed)->count(),
         ];
     }
 
     /**
      * Filter tasks using criteria
-     *
-     * @param \App\Repositories\Criteria\Task\TaskFilter $filter
-     * @param \App\DTOs\PaginationDTO $pagination
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function filter(
         \App\Repositories\Criteria\Task\TaskFilter $filter,
-        \App\DTOs\PaginationDTO $pagination = new PaginationDTO()
-    ): \Illuminate\Contracts\Pagination\LengthAwarePaginator
-    {
+        \App\DTOs\PaginationDTO $pagination = new PaginationDTO
+    ): \Illuminate\Contracts\Pagination\LengthAwarePaginator {
         $query = $this->task->with(['project', 'assignedTo', 'createdBy'])->newQuery();
 
         // Apply all criteria

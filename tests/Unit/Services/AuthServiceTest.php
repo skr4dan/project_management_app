@@ -13,15 +13,18 @@ use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\AuthService;
 use Illuminate\Support\Facades\Hash;
 use Mockery;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use PHPUnit\Framework\Attributes\Test;
 
 class AuthServiceTest extends TestCase
 {
     private AuthService $authService;
+
     private $userRepositoryMock;
+
     private $roleRepositoryMock;
+
     private $user;
 
     protected function setUp(): void

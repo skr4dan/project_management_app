@@ -30,14 +30,14 @@ class DatabaseSeeder extends Seeder
         User::factory()->count(5)->state(fn () => [
             'first_name' => 'Manager',
             'last_name' => 'User',
-            'email' => 'manager_' . uniqid() . '@example.com',
+            'email' => 'manager_'.uniqid().'@example.com',
             'role_id' => $managerRoleId,
         ])->create();
 
         User::factory()->count(5)->state(fn () => [
             'first_name' => 'Regular',
             'last_name' => 'User',
-            'email' => 'user_' . uniqid() . '@example.com',
+            'email' => 'user_'.uniqid().'@example.com',
             'role_id' => $userRoleId,
         ])->create();
 

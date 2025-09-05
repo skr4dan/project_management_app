@@ -32,8 +32,7 @@ class UserDTO
     /**
      * Create DTO from array data
      *
-     * @param array<string, mixed> $data
-     * @return self
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -97,7 +96,6 @@ class UserDTO
      * Validate the DTO data
      *
      * @throws \InvalidArgumentException
-     * @return void
      */
     private function validate(): void
     {
@@ -117,8 +115,7 @@ class UserDTO
     /**
      * Create a new instance with modified data
      *
-     * @param array<string, mixed> $changes
-     * @return self
+     * @param  array<string, mixed>  $changes
      */
     public function with(array $changes): self
     {
@@ -142,18 +139,14 @@ class UserDTO
 
     /**
      * Get user's full name
-     *
-     * @return string
      */
     public function getFullName(): string
     {
-        return trim($this->first_name . ' ' . $this->last_name);
+        return trim($this->first_name.' '.$this->last_name);
     }
 
     /**
      * Check if user is active
-     *
-     * @return bool
      */
     public function isActive(): bool
     {
@@ -162,8 +155,6 @@ class UserDTO
 
     /**
      * Check if user is blocked
-     *
-     * @return bool
      */
     public function isBlocked(): bool
     {
@@ -172,8 +163,6 @@ class UserDTO
 
     /**
      * Check if user is inactive
-     *
-     * @return bool
      */
     public function isInactive(): bool
     {
@@ -182,18 +171,14 @@ class UserDTO
 
     /**
      * Get user initials
-     *
-     * @return string
      */
     public function getInitials(): string
     {
-        return strtoupper($this->first_name[0] . $this->last_name[0]);
+        return strtoupper($this->first_name[0].$this->last_name[0]);
     }
 
     /**
      * Check if user has a role assigned
-     *
-     * @return bool
      */
     public function hasRole(): bool
     {

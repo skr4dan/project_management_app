@@ -24,6 +24,7 @@ class TaskFilter
     public function addCriteria(CriteriaInterface $criteria): self
     {
         $this->criteria[] = $criteria;
+
         return $this;
     }
 
@@ -35,6 +36,7 @@ class TaskFilter
         foreach ($this->criteria as $criteria) {
             $query = $criteria->apply($query);
         }
+
         return $query;
     }
 
@@ -86,6 +88,6 @@ class TaskFilter
      */
     public function hasCriteria(): bool
     {
-        return !empty($this->criteria);
+        return ! empty($this->criteria);
     }
 }

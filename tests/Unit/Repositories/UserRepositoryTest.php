@@ -5,8 +5,8 @@ namespace Tests\Unit\Repositories;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class UserRepositoryTest extends TestCase
 {
@@ -18,7 +18,7 @@ class UserRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->userRepository = new UserRepository(new User());
+        $this->userRepository = new UserRepository(new User);
     }
 
     #[Test]
@@ -61,7 +61,6 @@ class UserRepositoryTest extends TestCase
 
         $this->assertNull($foundUser);
     }
-
 
     #[Test]
     public function it_can_find_users_by_role()
@@ -203,12 +202,12 @@ class UserRepositoryTest extends TestCase
     {
         User::factory()->create([
             'first_name' => 'John',
-            'last_name' => 'Doe'
+            'last_name' => 'Doe',
         ]);
         User::factory()->create(['email' => 'jane@example.com']);
         User::factory()->create([
             'first_name' => 'Bob',
-            'last_name' => 'Smith'
+            'last_name' => 'Smith',
         ]);
 
         $results = $this->userRepository->search('John');

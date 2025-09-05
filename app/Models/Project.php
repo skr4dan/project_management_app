@@ -5,8 +5,8 @@ namespace App\Models;
 use App\Enums\Project\ProjectStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Project Model
@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $created_by Foreign key to the user who created this project
  * @property \Carbon\Carbon $created_at Timestamp when the project was created
  * @property \Carbon\Carbon $updated_at Timestamp when the project was last updated
- *
  * @property-read User $createdBy The user who created this project
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Task> $tasks Tasks belonging to this project
  *

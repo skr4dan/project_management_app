@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\User;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class StatisticsApiTest extends TestCase
 {
@@ -120,7 +120,7 @@ class StatisticsApiTest extends TestCase
 
         // Verify top active users (exact counts)
         $this->assertCount(3, $data['top_active_users']);
-        $this->assertEquals($admin->first_name . ' ' . $admin->last_name, $data['top_active_users'][0]['name']);
+        $this->assertEquals($admin->first_name.' '.$admin->last_name, $data['top_active_users'][0]['name']);
         $this->assertEquals(4, $data['top_active_users'][0]['task_count']); // 2 completed + 1 additional + 1 overdue
         $this->assertEquals(2, $data['top_active_users'][1]['task_count']); // 1 in_progress + 1 additional
         $this->assertEquals(1, $data['top_active_users'][2]['task_count']); // 1 pending
@@ -270,19 +270,19 @@ class StatisticsApiTest extends TestCase
         $this->assertCount(4, $data['top_active_users']);
 
         // User 3 should be first (5 tasks)
-        $this->assertEquals($user3->first_name . ' ' . $user3->last_name, $data['top_active_users'][0]['name']);
+        $this->assertEquals($user3->first_name.' '.$user3->last_name, $data['top_active_users'][0]['name']);
         $this->assertEquals(5, $data['top_active_users'][0]['task_count']);
 
         // User 1 should be second (4 tasks)
-        $this->assertEquals($user1->first_name . ' ' . $user1->last_name, $data['top_active_users'][1]['name']);
+        $this->assertEquals($user1->first_name.' '.$user1->last_name, $data['top_active_users'][1]['name']);
         $this->assertEquals(4, $data['top_active_users'][1]['task_count']);
 
         // User 2 should be third (3 tasks)
-        $this->assertEquals($user2->first_name . ' ' . $user2->last_name, $data['top_active_users'][2]['name']);
+        $this->assertEquals($user2->first_name.' '.$user2->last_name, $data['top_active_users'][2]['name']);
         $this->assertEquals(3, $data['top_active_users'][2]['task_count']);
 
         // Admin should be fourth (2 tasks)
-        $this->assertEquals($admin->first_name . ' ' . $admin->last_name, $data['top_active_users'][3]['name']);
+        $this->assertEquals($admin->first_name.' '.$admin->last_name, $data['top_active_users'][3]['name']);
         $this->assertEquals(2, $data['top_active_users'][3]['task_count']);
     }
 
@@ -331,7 +331,7 @@ class StatisticsApiTest extends TestCase
 
         // Verify top user
         $this->assertCount(1, $data['top_active_users']);
-        $this->assertEquals($admin->first_name . ' ' . $admin->last_name, $data['top_active_users'][0]['name']);
+        $this->assertEquals($admin->first_name.' '.$admin->last_name, $data['top_active_users'][0]['name']);
         $this->assertEquals(15, $data['top_active_users'][0]['task_count']);
     }
 }

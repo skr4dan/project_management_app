@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $is_active Whether the role is active and can be assigned to users
  * @property \Carbon\Carbon $created_at Timestamp when the role was created
  * @property \Carbon\Carbon $updated_at Timestamp when the role was last updated
- *
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users Users assigned to this role
  *
  * @method static \Illuminate\Database\Eloquent\Builder|Role active() Get only active roles
@@ -71,7 +70,7 @@ class Role extends Model
     /**
      * Scope to get active roles only.
      *
-     * @param \Illuminate\Database\Eloquent\Builder<Role> $query
+     * @param  \Illuminate\Database\Eloquent\Builder<Role>  $query
      * @return \Illuminate\Database\Eloquent\Builder<Role>
      */
     public function scopeActive($query)
@@ -82,8 +81,8 @@ class Role extends Model
     /**
      * Scope to find role by slug.
      *
-     * @param \Illuminate\Database\Eloquent\Builder<Role> $query
-     * @param string $slug The role slug to search for
+     * @param  \Illuminate\Database\Eloquent\Builder<Role>  $query
+     * @param  string  $slug  The role slug to search for
      * @return \Illuminate\Database\Eloquent\Builder<Role>
      */
     public function scopeBySlug($query, string $slug)
@@ -94,7 +93,7 @@ class Role extends Model
     /**
      * Check if role has a specific permission.
      *
-     * @param string $permission The permission to check
+     * @param  string  $permission  The permission to check
      * @return bool True if the role has the permission
      */
     public function hasPermission(string $permission): bool
@@ -105,18 +104,18 @@ class Role extends Model
     /**
      * Check if role has any of the given permissions.
      *
-     * @param array<int, string> $permissions Array of permissions to check
+     * @param  array<int, string>  $permissions  Array of permissions to check
      * @return bool True if the role has any of the permissions
      */
     public function hasAnyPermission(array $permissions): bool
     {
-        return !empty(array_intersect($permissions, $this->permissions ?? []));
+        return ! empty(array_intersect($permissions, $this->permissions ?? []));
     }
 
     /**
      * Check if role has all of the given permissions.
      *
-     * @param array<int, string> $permissions Array of permissions to check
+     * @param  array<int, string>  $permissions  Array of permissions to check
      * @return bool True if the role has all the permissions
      */
     public function hasAllPermissions(array $permissions): bool

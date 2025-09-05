@@ -20,14 +20,14 @@ class RoleMiddleware
         try {
             $user = JWTAuth::parseToken()->authenticate();
 
-            if (!$user) {
+            if (! $user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not authenticated',
                 ], Response::HTTP_UNAUTHORIZED);
             }
 
-            if (!$user->role) {
+            if (! $user->role) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User has no role assigned',
@@ -36,7 +36,7 @@ class RoleMiddleware
 
             $userRole = $user->role->slug;
 
-            if (!in_array($userRole, $roles)) {
+            if (! in_array($userRole, $roles)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Insufficient permissions',
