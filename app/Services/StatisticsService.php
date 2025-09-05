@@ -10,11 +10,7 @@ use App\Repositories\Contracts\ProjectRepositoryInterface;
 use App\Repositories\Contracts\TaskRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Contracts\StatisticsServiceInterface;
-use Illuminate\Cache\TaggedCache;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class StatisticsService implements StatisticsServiceInterface
 {
