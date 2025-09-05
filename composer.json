@@ -63,6 +63,9 @@
         ],
         "phpstan": [
             "./vendor/bin/phpstan analyse --memory-limit=512M"
+        ],
+        "pint": [
+            "./vendor/bin/pint"
         ]
     },
     "extra": {
