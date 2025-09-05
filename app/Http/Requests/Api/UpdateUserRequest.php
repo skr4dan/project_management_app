@@ -26,7 +26,7 @@ class UpdateUserRequest extends FormRequest
             'last_name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', 'unique:users,email,' . $this->route('id')],
             'phone' => ['nullable', 'string', 'regex:/^\+?[\d\s\-\(\)]+$/', 'max:20'],
-            'avatar' => ['nullable', 'string', 'url'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
         ];
     }
 
@@ -46,7 +46,9 @@ class UpdateUserRequest extends FormRequest
             'email.unique' => 'This email is already taken',
             'phone.regex' => 'Please provide a valid phone number',
             'phone.max' => 'Phone number cannot exceed 20 characters',
-            'avatar.url' => 'Avatar must be a valid URL',
+            'avatar.image' => 'Avatar must be an image file',
+            'avatar.mimes' => 'Avatar must be a file of type: jpeg, png, jpg, gif, svg',
+            'avatar.max' => 'Avatar file size must not exceed 2MB',
         ];
     }
 

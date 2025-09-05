@@ -54,9 +54,17 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         try {
-            $registerDTO = RegisterDTO::fromArray($request->validated());
+            $validatedData = $request->validated();
+            $avatarPath = null;
+
+            // Handle avatar upload
+            if ($request->hasFile('avatar')) {
+                $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            }
+
+            $registerDTO = RegisterDTO::fromArray($validatedData);
             /** @var AuthResponseDTO $result */
-            $result = $this->authService->register($registerDTO);
+            $result = $this->authService->register($registerDTO, $avatarPath);
 
             return response()->json([
                 'success' => true,

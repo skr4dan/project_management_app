@@ -99,6 +99,17 @@ class UserController extends Controller
                 return $value !== null;
             });
 
+            $avatarPath = $user->avatar;
+
+            // Handle avatar upload
+            if ($request->hasFile('avatar')) {
+                // Delete old avatar if exists
+                if ($user->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->avatar)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+                }
+                $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            }
+
             // Get current user data for merging
             $currentData = [
                 'id' => $user->id,
@@ -108,7 +119,7 @@ class UserController extends Controller
                 'password' => $user->password,
                 'role_id' => $user->role_id,
                 'status' => $user->status,
-                'avatar' => $user->avatar,
+                'avatar' => $avatarPath,
                 'phone' => $user->phone,
                 'remember_token' => $user->remember_token,
                 'created_at' => $user->created_at,

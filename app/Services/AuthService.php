@@ -10,6 +10,7 @@ use App\DTOs\User\UserDTO;
 use App\Models\User;
 use App\Services\Contracts\AuthServiceInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -17,6 +18,7 @@ class AuthService implements AuthServiceInterface
 {
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
+        private readonly RoleRepositoryInterface $roleRepository,
     ) {}
 
     /**
@@ -49,14 +51,21 @@ class AuthService implements AuthServiceInterface
      * Register a new user and return JWT token.
      *
      * @param RegisterDTO $registerDTO
+     * @param string|null $avatarPath
      * @return AuthResponseDTO
      * @throws \Exception
      */
-    public function register(RegisterDTO $registerDTO): AuthResponseDTO
+    public function register(RegisterDTO $registerDTO, ?string $avatarPath = null): AuthResponseDTO
     {
         // Check if user already exists
         if ($this->userRepository->findByEmail($registerDTO->email)) {
             throw new \Exception('User already exists with this email');
+        }
+
+        // Get the default 'user' role
+        $defaultRole = $this->roleRepository->findBySlug('user');
+        if (!$defaultRole) {
+            throw new \Exception('Default user role not found. Please run database migrations.');
         }
 
         // Create UserDTO from RegisterDTO
@@ -66,9 +75,9 @@ class AuthService implements AuthServiceInterface
             last_name: trim(str_replace(explode(' ', $registerDTO->name)[0], '', $registerDTO->name)),
             email: $registerDTO->email,
             password: Hash::make($registerDTO->password),
-            role_id: null,
+            role_id: $defaultRole->id,
             status: \App\Enums\User\UserStatus::Active,
-            avatar: null,
+            avatar: $avatarPath,
             phone: null,
             remember_token: null,
             created_at: null,
@@ -77,6 +86,9 @@ class AuthService implements AuthServiceInterface
 
         // Create user
         $user = $this->userRepository->createFromDTO($userDTO);
+
+        // Load the role relationship
+        $user->load('role');
 
         // Generate token
         $token = JWTAuth::fromUser($user);

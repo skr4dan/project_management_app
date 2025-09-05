@@ -35,6 +35,10 @@ class AuthTest extends TestCase
                         'first_name',
                         'last_name',
                         'email',
+                        'role',
+                        'status',
+                        'avatar',
+                        'phone',
                         'created_at',
                         'updated_at',
                     ],
@@ -54,6 +58,67 @@ class AuthTest extends TestCase
             'last_name' => 'Doe',
             'email' => 'john@example.com',
         ]);
+    }
+
+    #[Test]
+    public function user_can_register_with_avatar_and_avatar_is_accessible()
+    {
+        // Create a fake avatar file for testing (using create method to avoid GD dependency)
+        $avatarFile = \Illuminate\Http\UploadedFile::fake()->create('avatar.jpg', 1000, 'image/jpeg');
+
+        $userData = [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => 'P@ssword123',
+            'password_confirmation' => 'P@ssword123',
+            'avatar' => $avatarFile,
+        ];
+
+        $response = $this->postJson('/api/auth/register', $userData);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'access_token',
+                    'token_type',
+                    'expires_in',
+                    'user' => [
+                        'id',
+                        'first_name',
+                        'last_name',
+                        'email',
+                        'role',
+                        'status',
+                        'avatar',
+                        'phone',
+                        'created_at',
+                        'updated_at',
+                    ],
+                ],
+                'message',
+            ]);
+
+        // Verify avatar is accessible in the response
+        $userData = $response->json('data.user');
+        $this->assertNotNull($userData['avatar']);
+        $this->assertStringStartsWith(config('app.url') . '/storage/', $userData['avatar']);
+        $this->assertStringContainsString('avatars/', $userData['avatar']);
+
+        // Verify avatar file was stored
+        $avatarPath = str_replace(config('app.url') . '/storage/', '', $userData['avatar']);
+        $this->assertTrue(\Illuminate\Support\Facades\Storage::disk('public')->exists($avatarPath));
+
+        // Verify user was created with avatar in database
+        $this->assertDatabaseHas('users', [
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => 'john@example.com',
+        ]);
+
+        $user = \App\Models\User::where('email', 'john@example.com')->first();
+        $this->assertNotNull($user->avatar);
+        $this->assertStringContainsString('avatars/', $user->avatar);
     }
 
     #[Test]

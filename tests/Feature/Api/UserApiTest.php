@@ -208,6 +208,51 @@ class UserApiTest extends TestCase
     }
 
     #[Test]
+    public function user_can_change_avatar_and_new_avatar_is_accessible()
+    {
+        $user = User::factory()->create([
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'avatar' => 'avatars/old-avatar.jpg', // Pre-set avatar in database
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        // Update user with new avatar
+        $newAvatarFile = \Illuminate\Http\UploadedFile::fake()->create('new-avatar.png', 1000, 'image/png');
+        $updateData = [
+            'first_name' => 'Jane',
+            'avatar' => $newAvatarFile,
+        ];
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->putJson("/api/users/{$user->id}", $updateData);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'id' => $user->id,
+                    'first_name' => 'Jane',
+                    'email' => $user->email,
+                ],
+                'message' => 'User updated successfully',
+            ]);
+
+        // Verify new avatar is accessible in the response
+        $userData = $response->json('data');
+        $this->assertNotNull($userData['avatar']);
+        $this->assertStringStartsWith(config('app.url') . '/storage/', $userData['avatar']);
+
+        // Verify user was updated in database with new avatar (different from old one)
+        $updatedUser = User::find($user->id);
+        $this->assertEquals('Jane', $updatedUser->first_name);
+        $this->assertNotNull($updatedUser->avatar);
+        $this->assertNotEquals('avatars/old-avatar.jpg', $updatedUser->avatar); // Avatar should have changed
+    }
+
+
+    #[Test]
     public function admin_can_update_any_user_profile()
     {
         $admin = User::factory()->create();

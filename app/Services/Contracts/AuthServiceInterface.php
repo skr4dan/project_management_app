@@ -23,10 +23,11 @@ interface AuthServiceInterface
      * Register a new user and return JWT token.
      *
      * @param RegisterDTO $registerDTO
+     * @param string|null $avatarPath
      * @return AuthResponseDTO
      * @throws \Exception
      */
-    public function register(RegisterDTO $registerDTO): AuthResponseDTO;
+    public function register(RegisterDTO $registerDTO, ?string $avatarPath = null): AuthResponseDTO;
 
     /**
      * Logout user by invalidating token.

@@ -10,7 +10,7 @@ use App\Enums\User\UserStatus;
  * Represents user data as a value object for transfer between layers.
  * Immutable and validated to ensure data integrity.
  */
-readonly class UserDTO
+class UserDTO
 {
     public function __construct(
         public ?int $id,

@@ -26,6 +26,7 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
         ];
     }
 
@@ -45,6 +46,9 @@ class RegisterRequest extends FormRequest
             'password.required' => 'Password is required',
             'password.confirmed' => 'Password confirmation does not match',
             'password.min' => 'Password must be at least 8 characters long',
+            'avatar.image' => 'Avatar must be an image file',
+            'avatar.mimes' => 'Avatar must be a file of type: jpeg, png, jpg, gif, svg',
+            'avatar.max' => 'Avatar file size must not exceed 2MB',
         ];
     }
 
@@ -59,6 +63,7 @@ class RegisterRequest extends FormRequest
             'name' => 'full name',
             'email' => 'email address',
             'password' => 'password',
+            'avatar' => 'avatar',
         ];
     }
 

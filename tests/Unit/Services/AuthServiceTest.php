@@ -6,7 +6,9 @@ use App\DTOs\Auth\AuthResponseDTO;
 use App\DTOs\Auth\LoginDTO;
 use App\DTOs\Auth\RegisterDTO;
 use App\DTOs\Auth\TokenResponseDTO;
+use App\Models\Role;
 use App\Models\User;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\AuthService;
 use Illuminate\Support\Facades\Hash;
@@ -19,6 +21,7 @@ class AuthServiceTest extends TestCase
 {
     private AuthService $authService;
     private $userRepositoryMock;
+    private $roleRepositoryMock;
     private $user;
 
     protected function setUp(): void
@@ -26,7 +29,8 @@ class AuthServiceTest extends TestCase
         parent::setUp();
 
         $this->userRepositoryMock = Mockery::mock(UserRepositoryInterface::class);
-        $this->authService = new AuthService($this->userRepositoryMock);
+        $this->roleRepositoryMock = Mockery::mock(RoleRepositoryInterface::class);
+        $this->authService = new AuthService($this->userRepositoryMock, $this->roleRepositoryMock);
 
         $this->user = new User([
             'id' => 1,
@@ -97,6 +101,12 @@ class AuthServiceTest extends TestCase
             email: 'john@example.com',
             password: 'password123'
         );
+
+        $this->roleRepositoryMock
+            ->shouldReceive('findBySlug')
+            ->once()
+            ->with('user')
+            ->andReturn(Role::factory()->makeOne(['slug' => 'user']));
 
         $this->userRepositoryMock
             ->shouldReceive('findByEmail')
@@ -242,6 +252,12 @@ class AuthServiceTest extends TestCase
             email: 'john@example.com',
             password: 'plaintextpassword'
         );
+
+        $this->roleRepositoryMock
+            ->shouldReceive('findBySlug')
+            ->once()
+            ->with('user')
+            ->andReturn(Role::factory()->makeOne(['slug' => 'user']));
 
         $this->userRepositoryMock
             ->shouldReceive('findByEmail')
