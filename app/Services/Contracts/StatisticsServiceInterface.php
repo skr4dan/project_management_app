@@ -16,7 +16,7 @@ interface StatisticsServiceInterface
     /**
      * Clear statistics cache when data changes.
      *
-     * @param array $tags
+     * @param array<string> $tags
      * @return void
      */
     public function clearCache(array $tags = []): void;

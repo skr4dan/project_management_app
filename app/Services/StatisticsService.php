@@ -86,7 +86,7 @@ class StatisticsService implements StatisticsServiceInterface
     /**
      * Get tasks count by status using enhanced collections and optimized queries.
      *
-     * @return array
+     * @return array<string, int>
      */
     private function getTasksByStatus(): array
     {
@@ -119,7 +119,7 @@ class StatisticsService implements StatisticsServiceInterface
     /**
      * Get top 5 most active users by number of created tasks using optimized query.
      *
-     * @return array
+     * @return array<array{id: int, name: string, email: string, task_count: int}>
      */
     private function getTopActiveUsers(): array
     {
@@ -145,7 +145,7 @@ class StatisticsService implements StatisticsServiceInterface
     /**
      * Clear statistics cache when data changes.
      *
-     * @param array $tags
+     * @param array<string> $tags
      * @return void
      */
     public function clearCache(array $tags = []): void

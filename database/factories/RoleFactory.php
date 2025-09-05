@@ -27,10 +27,10 @@ class RoleFactory extends Factory
         ];
     }
 
-    /**
+    /**w
      * Generate a random set of permissions for the role.
      *
-     * @return array
+     * @return array<string>
      */
     private function generateRandomPermissions(): array
     {
