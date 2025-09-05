@@ -32,14 +32,14 @@ class TaskIndexRequest extends FormRequest
             'priority' => ['nullable', 'string', Rule::in(array_column(TaskPriority::cases(), 'value'))],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
-            'sort_by' => ['nullable', 'string', Rule::in($this->getSotrableFields())],
+            'sort_by' => ['nullable', 'string', Rule::in($this->getSortableFields())],
             'sort_order' => ['nullable', 'string', 'in:asc,desc'],
             'per_page' => ['nullable', 'integer', 'min:1'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
-    private function getSotrableFields(): array
+    private function getSortableFields(): array
     {
         return ['due_date', 'created_at'];
     }
@@ -56,7 +56,7 @@ class TaskIndexRequest extends FormRequest
             'priority.in' => 'Priority must be one of: ' . implode(', ', array_column(TaskPriority::cases(), 'value')),
             'project_id.exists' => 'Selected project does not exist',
             'assigned_to.exists' => 'Selected user does not exist',
-            'sort_by.in' => 'Sort by must be one of: ' . implode(', ', $this->getSotrableFields()),
+            'sort_by.in' => 'Sort by must be one of: ' . implode(', ', $this->getSortableFields()),
             'sort_order.in' => 'Sort order must be asc or desc',
         ];
     }
