@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,4 +28,29 @@ Route::middleware('jwt.auth')->prefix('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/user', [AuthController::class, 'user']);
+});
+
+// Protected user routes (require JWT token and role-based access)
+Route::middleware(['jwt.auth'])->prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index'])->middleware('role:admin,manager');
+    Route::get('/{id}', [UserController::class, 'show']);
+    Route::put('/{id}', [UserController::class, 'update']);
+});
+
+// Protected project routes (require JWT token and role-based access)
+Route::middleware(['jwt.auth'])->prefix('projects')->group(function () {
+    Route::get('/', [ProjectController::class, 'index']);
+    Route::post('/', [ProjectController::class, 'store'])->middleware('role:manager,admin');
+    Route::get('/{id}', [ProjectController::class, 'show']);
+    Route::put('/{id}', [ProjectController::class, 'update']);
+    Route::delete('/{id}', [ProjectController::class, 'destroy']);
+});
+
+// Protected task routes (require JWT token and role-based access)
+Route::middleware(['jwt.auth'])->prefix('tasks')->group(function () {
+    Route::get('/', [TaskController::class, 'index']);
+    Route::post('/', [TaskController::class, 'store'])->middleware('role:manager,admin');
+    Route::get('/{id}', [TaskController::class, 'show']);
+    Route::put('/{id}', [TaskController::class, 'update']);
+    Route::delete('/{id}', [TaskController::class, 'destroy']);
 });

@@ -20,7 +20,16 @@ class UserResource extends JsonResource
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
             'email' => $this->email,
-            'email_verified_at' => $this->email_verified_at?->toISOString(),
+            'role' => $this->whenLoaded('role', function () {
+                return [
+                    'id' => $this->role->id,
+                    'slug' => $this->role->slug,
+                    'name' => $this->role->name,
+                ];
+            }),
+            'status' => $this->status?->value,
+            'avatar' => $this->avatar,
+            'phone' => $this->phone,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];
