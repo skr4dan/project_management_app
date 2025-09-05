@@ -145,11 +145,10 @@ interface TaskRepositoryInterface
     public function getUserStatistics(int $userId): array;
 
     /**
-     * Search tasks by title or description
+     * Filter tasks using criteria
      *
-     * @param string $query
-     * @param int|null $projectId Optional project filter
+     * @param \App\Repositories\Criteria\Task\TaskFilter $filter
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function search(string $query, ?int $projectId = null);
+    public function filter(\App\Repositories\Criteria\Task\TaskFilter $filter);
 }

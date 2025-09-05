@@ -245,24 +245,18 @@ class TaskRepository implements TaskRepositoryInterface
     }
 
     /**
-     * Search tasks by title or description
+     * Filter tasks using criteria
      *
-     * @param string $query
-     * @param int|null $projectId Optional project filter
+     * @param \App\Repositories\Criteria\Task\TaskFilter $filter
      * @return Collection<int, Task>
      */
-    public function search(string $query, ?int $projectId = null): Collection
+    public function filter(\App\Repositories\Criteria\Task\TaskFilter $filter): Collection
     {
-        $builder = $this->task
-            ->where(function ($q) use ($query) {
-                $q->where('title', 'like', "%{$query}%")
-                  ->orWhere('description', 'like', "%{$query}%");
-            });
+        $query = $this->task->newQuery();
 
-        if ($projectId) {
-            $builder->where('project_id', $projectId);
-        }
+        // Apply all criteria
+        $query = $filter->apply($query);
 
-        return $builder->get();
+        return $query->get();
     }
 }

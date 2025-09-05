@@ -11,6 +11,7 @@ use App\Repositories\TaskRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 use Carbon\Carbon;
 
 class TaskRepositoryTest extends TestCase
@@ -379,33 +380,178 @@ class TaskRepositoryTest extends TestCase
     }
 
     #[Test]
-    public function it_can_search_tasks()
+    public function it_can_filter_tasks_by_status()
     {
-        $project = Project::factory()->create();
-        Task::factory()->create([
-            'title' => 'Laravel Task',
-            'project_id' => $project->id
-        ]);
-        Task::factory()->create([
-            'title' => 'React Task',
-            'project_id' => $project->id
-        ]);
+        Task::factory()->count(2)->create(['status' => TaskStatus::Completed->value]);
+        Task::factory()->count(3)->create(['status' => TaskStatus::Pending->value]);
 
-        $results = $this->taskRepository->search('Laravel', $project->id);
+        $filter = new \App\Repositories\Criteria\Task\TaskFilter(['status' => TaskStatus::Completed->value]);
+        $tasks = $this->taskRepository->filter($filter);
 
-        $this->assertCount(1, $results);
-        $this->assertEquals('Laravel Task', $results->first()->title);
+        $this->assertCount(2, $tasks);
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
+        $tasks->each(function ($task) {
+            $this->assertEquals(TaskStatus::Completed, $task->status);
+        });
     }
 
     #[Test]
-    public function it_can_search_tasks_without_project_filter()
+    public function it_can_filter_tasks_by_priority()
     {
-        Task::factory()->create(['title' => 'Laravel Task']);
-        Task::factory()->create(['title' => 'React Task']);
+        Task::factory()->count(2)->create(['priority' => TaskPriority::High->value]);
+        Task::factory()->count(1)->create(['priority' => TaskPriority::Medium->value]);
 
-        $results = $this->taskRepository->search('Laravel');
+        $filter = new \App\Repositories\Criteria\Task\TaskFilter(['priority' => TaskPriority::High->value]);
+        $tasks = $this->taskRepository->filter($filter);
 
-        $this->assertCount(1, $results);
-        $this->assertEquals('Laravel Task', $results->first()->title);
+        $this->assertCount(2, $tasks);
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
+        $tasks->each(function ($task) {
+            $this->assertEquals(TaskPriority::High, $task->priority);
+        });
+    }
+
+    #[Test]
+    public function it_can_filter_tasks_by_project()
+    {
+        $project1 = Project::factory()->create();
+        $project2 = Project::factory()->create();
+        Task::factory()->count(3)->create(['project_id' => $project1->id]);
+        Task::factory()->count(2)->create(['project_id' => $project2->id]);
+
+        $filter = new \App\Repositories\Criteria\Task\TaskFilter(['project_id' => $project1->id]);
+        $tasks = $this->taskRepository->filter($filter);
+
+        $this->assertCount(3, $tasks);
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
+        $tasks->each(function ($task) use ($project1) {
+            $this->assertEquals($project1->id, $task->project_id);
+        });
+    }
+
+    #[Test]
+    public function it_can_filter_tasks_by_assignee()
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        Task::factory()->count(2)->create(['assigned_to' => $user1->id]);
+        Task::factory()->count(1)->create(['assigned_to' => $user2->id]);
+
+        $filter = new \App\Repositories\Criteria\Task\TaskFilter(['assigned_to' => $user1->id]);
+        $tasks = $this->taskRepository->filter($filter);
+
+        $this->assertCount(2, $tasks);
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
+        $tasks->each(function ($task) use ($user1) {
+            $this->assertEquals($user1->id, $task->assigned_to);
+        });
+    }
+
+    #[Test]
+    public function it_can_filter_tasks_with_multiple_criteria()
+    {
+        $project = Project::factory()->create();
+        $user = User::factory()->create();
+
+        // Create tasks that match all criteria
+        Task::factory()->count(2)->create([
+            'project_id' => $project->id,
+            'assigned_to' => $user->id,
+            'status' => TaskStatus::Pending->value,
+            'priority' => TaskPriority::High->value,
+        ]);
+
+        // Create tasks that don't match all criteria
+        Task::factory()->create([
+            'project_id' => $project->id,
+            'assigned_to' => $user->id,
+            'status' => TaskStatus::Completed->value, // Different status
+        ]);
+
+        Task::factory()->create([
+            'project_id' => $project->id,
+            'assigned_to' => User::factory()->create()->id, // Different assignee
+            'status' => TaskStatus::Pending->value,
+        ]);
+
+        $filter = new \App\Repositories\Criteria\Task\TaskFilter([
+            'project_id' => $project->id,
+            'assigned_to' => $user->id,
+            'status' => TaskStatus::Pending->value,
+            'priority' => TaskPriority::High->value,
+        ]);
+
+        $tasks = $this->taskRepository->filter($filter);
+
+        $this->assertCount(2, $tasks);
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
+        $tasks->each(function ($task) use ($project, $user) {
+            $this->assertEquals($project->id, $task->project_id);
+            $this->assertEquals($user->id, $task->assigned_to);
+            $this->assertEquals(TaskStatus::Pending, $task->status);
+            $this->assertEquals(TaskPriority::High, $task->priority);
+        });
+    }
+
+    #[Test]
+    #[TestWith(['due_date', 'asc'])]
+    #[TestWith(['due_date', 'desc'])]
+    #[TestWith(['created_at', 'asc'])]
+    #[TestWith(['created_at', 'desc'])]
+    public function it_can_filter_tasks_with_sorting(string $sortField, string $sortOrder)
+    {
+        $project = Project::factory()->create();
+
+        // Create tasks with different timestamps and due dates
+        $firstTask = Task::factory()->create([
+            'project_id' => $project->id,
+            'title' => 'First Task',
+            'due_date' => now()->addDays(1),
+            'created_at' => now()->subDays(2)
+        ]);
+
+        $secondTask = Task::factory()->create([
+            'project_id' => $project->id,
+            'title' => 'Second Task',
+            'due_date' => now()->addDays(2),
+            'created_at' => now()->subDay()
+        ]);
+
+        $thirdTask = Task::factory()->create([
+            'project_id' => $project->id,
+            'title' => 'Third Task',
+            'due_date' => now()->addDays(3),
+            'created_at' => now()
+        ]);
+
+        $filter = new \App\Repositories\Criteria\Task\TaskFilter([
+            'project_id' => $project->id,
+            'sort_by' => $sortField,
+            'sort_order' => $sortOrder
+        ]);
+
+        $tasks = $this->taskRepository->filter($filter);
+
+        $this->assertCount(3, $tasks);
+
+        if ($sortOrder === 'asc') {
+            $this->assertEquals($firstTask->id, $tasks->first()->id);
+            $this->assertEquals($thirdTask->id, $tasks->last()->id);
+        } else {
+            $this->assertEquals($thirdTask->id, $tasks->first()->id);
+            $this->assertEquals($firstTask->id, $tasks->last()->id);
+        }
+    }
+
+    #[Test]
+    public function it_can_filter_tasks_with_empty_criteria()
+    {
+        Task::factory()->count(5)->create();
+
+        $filter = new \App\Repositories\Criteria\Task\TaskFilter([]);
+        $tasks = $this->taskRepository->filter($filter);
+
+        $this->assertCount(5, $tasks);
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
     }
 }

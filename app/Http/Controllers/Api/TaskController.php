@@ -7,6 +7,7 @@ use App\Enums\Task\TaskPriority;
 use App\Enums\Task\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CreateTaskRequest;
+use App\Http\Requests\Api\TaskIndexRequest;
 use App\Http\Requests\Api\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Repositories\Contracts\TaskRepositoryInterface;
@@ -24,29 +25,16 @@ class TaskController extends Controller
     /**
      * Get list of tasks with filtering and sorting
      */
-    public function index(): JsonResponse
+    public function index(TaskIndexRequest $request): JsonResponse
     {
         try {
-            $query = request();
-
-            // Build query based on filters
-            $tasks = $this->taskRepository->findById(0); // This will be replaced with proper filtering logic
-
-            // For now, let's get all tasks - in a real implementation you'd add filtering methods
-            // to the repository based on the query parameters
-            $tasks = $this->taskRepository->findByStatus(TaskStatus::Pending); // Placeholder
-
-            // TODO: Implement proper filtering based on query parameters:
-            // - status
-            // - priority
-            // - project_id
-            // - assigned_to
-            // - due_date
-            // - sort_by, sort_order
+            $filters = $request->getFilters();
+            $filter = new \App\Repositories\Criteria\Task\TaskFilter($filters);
+            $tasks = $this->taskRepository->filter($filter);
 
             return response()->json([
                 'success' => true,
-                'data' => TaskResource::collection([]), // Placeholder
+                'data' => TaskResource::collection($tasks),
                 'message' => 'Tasks retrieved successfully',
             ], Response::HTTP_OK);
         } catch (\Exception $e) {

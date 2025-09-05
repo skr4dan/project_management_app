@@ -6,6 +6,7 @@ use App\DTOs\Project\ProjectDTO;
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CreateProjectRequest;
+use App\Http\Requests\Api\ProjectIndexRequest;
 use App\Http\Requests\Api\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Repositories\Contracts\ProjectRepositoryInterface;
@@ -23,15 +24,15 @@ class ProjectController extends Controller
     /**
      * Get list of projects with optional status filtering
      */
-    public function index(): JsonResponse
+    public function index(ProjectIndexRequest $request): JsonResponse
     {
         try {
-            $status = request('status');
+            $status = $request->validated('status', null);
 
-            if ($status) {
-                $projects = $this->projectRepository->findByStatus(ProjectStatus::from($status));
-            } else {
+            if (is_null($status)) {
                 $projects = $this->projectRepository->getActiveProjects();
+            } else {
+                $projects = $this->projectRepository->findByStatus(ProjectStatus::from($status));
             }
 
             return response()->json([

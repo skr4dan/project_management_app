@@ -1,0 +1,120 @@
+<?php
+
+namespace App\Http\Requests\Api;
+
+use App\Enums\Task\TaskStatus;
+use App\Enums\Task\TaskPriority;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+/**
+ * Request class for task index endpoint with filtering and validation
+ */
+class TaskIndexRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, list<string>>
+     */
+    public function rules(): array
+    {
+        return [
+            'status' => ['nullable', 'string', Rule::in(TaskStatus::cases())],
+            'priority' => ['nullable', 'string', Rule::in(TaskPriority::cases())],
+            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
+            'sort_by' => ['nullable', 'string', Rule::in($this->getSotrableFields())],
+            'sort_order' => ['nullable', 'string', 'in:asc,desc'],
+        ];
+    }
+
+    private function getSotrableFields(): array
+    {
+        return ['due_date', 'created_at'];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'status.in' => 'Status must be one of: ' . implode(', ', TaskStatus::cases()),
+            'priority.in' => 'Priority must be one of: ' . implode(', ', TaskPriority::cases()),
+            'project_id.exists' => 'Selected project does not exist',
+            'assigned_to.exists' => 'Selected user does not exist',
+            'sort_by.in' => 'Sort by must be one of: ' . Rule::in($this->getSotrableFields()),
+            'sort_order.in' => 'Sort order must be asc or desc',
+        ];
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'status' => 'task status',
+            'priority' => 'task priority',
+            'project_id' => 'project ID',
+            'assigned_to' => 'assigned user',
+            'sort_by' => 'sort field',
+            'sort_order' => 'sort order',
+        ];
+    }
+
+    /**
+     * Get filters array from validated request data
+     *
+     * @return array<string, mixed>
+     */
+    public function getFilters(): array
+    {
+        $validated = $this->validated();
+        $filters = [];
+
+        // Only include non-null values
+        foreach ($validated as $key => $value) {
+            if ($value !== null && $value !== '') {
+                // Convert boolean strings and ensure proper types
+                if ($key === 'overdue') {
+                    $filters[$key] = (bool) $value;
+                } elseif (in_array($key, ['project_id', 'assigned_to'])) {
+                    $filters[$key] = (int) $value;
+                } else {
+                    $filters[$key] = $value;
+                }
+            }
+        }
+
+        return $filters;
+    }
+
+    /**
+     * Get filter summary for debugging/logging
+     *
+     * @return array<string, mixed>
+     */
+    public function getFilterSummary(): array
+    {
+        return [
+            'filters_applied' => count($this->getFilters()),
+            'has_search' => $this->has('search'),
+            'has_sorting' => $this->has('sort_by'),
+            'filter_keys' => array_keys($this->getFilters()),
+        ];
+    }
+}
