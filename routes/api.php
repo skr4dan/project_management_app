@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -53,4 +54,9 @@ Route::middleware(['jwt.auth'])->prefix('tasks')->group(function () {
     Route::get('/{id}', [TaskController::class, 'show']);
     Route::put('/{id}', [TaskController::class, 'update']);
     Route::delete('/{id}', [TaskController::class, 'destroy']);
+});
+
+// Protected statistics routes (require JWT token and admin access)
+Route::middleware(['jwt.auth'])->prefix('statistics')->group(function () {
+    Route::get('/', [StatisticsController::class, 'index'])->middleware('role:admin');
 });

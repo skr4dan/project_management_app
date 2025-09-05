@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Enums\Project\ProjectStatus;
+use GuzzleHttp\Handler\Proxy;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProjectRequest extends FormRequest
 {
@@ -24,7 +27,7 @@ class UpdateProjectRequest extends FormRequest
         return [
             'name' => ['sometimes', 'string', 'min:3', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'status' => ['sometimes', 'string', 'in:active,completed,archived'],
+            'status' => ['sometimes', 'string', Rule::in(array_column(ProjectStatus::cases(), 'value'))],
         ];
     }
 
@@ -41,7 +44,7 @@ class UpdateProjectRequest extends FormRequest
             'name.max' => 'Project name cannot exceed 255 characters',
             'description.string' => 'Project description must be a string',
             'description.max' => 'Project description cannot exceed 1000 characters',
-            'status.in' => 'Project status must be one of: active, completed, archived',
+            'status.in' => 'Project status must be one of: ' . implode(', ', array_column(ProjectStatus::cases(), 'value')),
         ];
     }
 

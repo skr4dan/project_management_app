@@ -54,6 +54,11 @@ class UserFactory extends Factory
         return $this->state($this->withRole('manager'));
     }
 
+    public function regularUser(): static
+    {
+        return $this->state($this->withRole('regular'));
+    }
+
     /**
      * Indicate that the model's email address should be unverified.
      */
