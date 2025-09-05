@@ -89,7 +89,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function findByStatus(UserStatus $status): Collection
     {
-        return $this->user->where('status', $status->value)->get();
+        return $this->user->with('role')->where('status', $status->value)->get();
     }
 
     /**

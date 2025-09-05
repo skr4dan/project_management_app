@@ -64,6 +64,9 @@ class ProjectController extends Controller
             $projectDTO = ProjectDTO::fromArray($projectData);
             $project = $this->projectRepository->createFromDTO($projectDTO);
 
+            // Load the createdBy relationship for the response
+            $project->load('createdBy');
+
             return response()->json([
                 'success' => true,
                 'data' => new ProjectResource($project),

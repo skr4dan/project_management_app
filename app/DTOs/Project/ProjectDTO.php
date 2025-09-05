@@ -36,7 +36,9 @@ readonly class ProjectDTO
             id: $data['id'] ?? null,
             name: $data['name'] ?? '',
             description: $data['description'] ?? null,
-            status: isset($data['status']) ? ProjectStatus::from($data['status']) : ProjectStatus::Active,
+            status: isset($data['status'])
+                ? ($data['status'] instanceof ProjectStatus ? $data['status'] : ProjectStatus::from($data['status']))
+                : ProjectStatus::Active,
             created_by: $data['created_by'] ?? null,
             created_at: isset($data['created_at']) ? new \DateTime($data['created_at']) : null,
             updated_at: isset($data['updated_at']) ? new \DateTime($data['updated_at']) : null,

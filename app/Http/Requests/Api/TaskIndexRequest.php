@@ -28,8 +28,8 @@ class TaskIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['nullable', 'string', Rule::in(TaskStatus::cases())],
-            'priority' => ['nullable', 'string', Rule::in(TaskPriority::cases())],
+            'status' => ['nullable', 'string', Rule::in(array_column(TaskStatus::cases(), 'value'))],
+            'priority' => ['nullable', 'string', Rule::in(array_column(TaskPriority::cases(), 'value'))],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
             'sort_by' => ['nullable', 'string', Rule::in($this->getSotrableFields())],
@@ -50,11 +50,11 @@ class TaskIndexRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'status.in' => 'Status must be one of: ' . implode(', ', TaskStatus::cases()),
-            'priority.in' => 'Priority must be one of: ' . implode(', ', TaskPriority::cases()),
+            'status.in' => 'Status must be one of: ' . implode(', ', array_column(TaskStatus::cases(), 'value')),
+            'priority.in' => 'Priority must be one of: ' . implode(', ', array_column(TaskPriority::cases(), 'value')),
             'project_id.exists' => 'Selected project does not exist',
             'assigned_to.exists' => 'Selected user does not exist',
-            'sort_by.in' => 'Sort by must be one of: ' . Rule::in($this->getSotrableFields()),
+            'sort_by.in' => 'Sort by must be one of: ' . implode(', ', $this->getSotrableFields()),
             'sort_order.in' => 'Sort order must be asc or desc',
         ];
     }
@@ -90,9 +90,7 @@ class TaskIndexRequest extends FormRequest
         foreach ($validated as $key => $value) {
             if ($value !== null && $value !== '') {
                 // Convert boolean strings and ensure proper types
-                if ($key === 'overdue') {
-                    $filters[$key] = (bool) $value;
-                } elseif (in_array($key, ['project_id', 'assigned_to'])) {
+                if (in_array($key, ['project_id', 'assigned_to'])) {
                     $filters[$key] = (int) $value;
                 } else {
                     $filters[$key] = $value;

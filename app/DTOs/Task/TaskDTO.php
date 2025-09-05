@@ -41,8 +41,12 @@ readonly class TaskDTO
             id: $data['id'] ?? null,
             title: $data['title'] ?? '',
             description: $data['description'] ?? null,
-            status: isset($data['status']) ? TaskStatus::from($data['status']) : TaskStatus::Pending,
-            priority: isset($data['priority']) ? TaskPriority::from($data['priority']) : TaskPriority::Medium,
+            status: isset($data['status'])
+                ? ($data['status'] instanceof TaskStatus ? $data['status'] : TaskStatus::from($data['status']))
+                : TaskStatus::Pending,
+            priority: isset($data['priority'])
+                ? ($data['priority'] instanceof TaskPriority ? $data['priority'] : TaskPriority::from($data['priority']))
+                : TaskPriority::Medium,
             project_id: $data['project_id'] ?? null,
             assigned_to: $data['assigned_to'] ?? null,
             created_by: $data['created_by'] ?? null,

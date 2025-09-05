@@ -44,7 +44,9 @@ readonly class UserDTO
             email: $data['email'] ?? '',
             password: $data['password'] ?? '',
             role_id: $data['role_id'] ?? null,
-            status: isset($data['status']) ? UserStatus::from($data['status']) : UserStatus::Active,
+            status: isset($data['status'])
+                ? ($data['status'] instanceof UserStatus ? $data['status'] : UserStatus::from($data['status']))
+                : UserStatus::Active,
             avatar: $data['avatar'] ?? null,
             phone: $data['phone'] ?? null,
             remember_token: $data['remember_token'] ?? null,

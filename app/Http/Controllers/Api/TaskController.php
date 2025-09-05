@@ -28,8 +28,15 @@ class TaskController extends Controller
     public function index(TaskIndexRequest $request): JsonResponse
     {
         try {
+            $user = $this->authService->user();
             $filters = $request->getFilters();
             $filter = new \App\Repositories\Criteria\Task\TaskFilter($filters);
+
+            if ($user->role->slug !== 'admin') {
+                // Add user filter criteria, so user can only see tasks assigned to them or created by them
+                $filter->addCriteria(new \App\Repositories\Criteria\Task\UserCriteria($user->id));
+            }
+
             $tasks = $this->taskRepository->filter($filter);
 
             return response()->json([
@@ -61,6 +68,9 @@ class TaskController extends Controller
 
             $taskDTO = TaskDTO::fromArray($taskData);
             $task = $this->taskRepository->createFromDTO($taskDTO);
+
+            // Load relationships for the response
+            $task->load(['project', 'assignedTo', 'createdBy']);
 
             return response()->json([
                 'success' => true,
@@ -119,9 +129,9 @@ class TaskController extends Controller
                 ], Response::HTTP_NOT_FOUND);
             }
 
-            // Check permissions: assignee, creator, or admin can update
+            // Check permissions: assignee, creator (only if unassigned), or admin can update
             $canUpdate = $task->assigned_to === $user->id ||
-                        $task->created_by === $user->id ||
+                        ($task->created_by === $user->id && $task->assigned_to === null) ||
                         $user->role->slug === 'admin';
 
             if (!$canUpdate) {

@@ -73,24 +73,26 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, int $id): JsonResponse
     {
         try {
-            $user = $this->authService->user();
+            $authenticatedUser = $this->authService->user();
+
+            $targetUser = $this->userRepository->findById($id);
+
+            if (!$targetUser) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found',
+                ], Response::HTTP_NOT_FOUND);
+            }
 
             // Allow admin to update any user, or users to update their own profile
-            if ($user->id !== $id && $user->role->slug !== 'admin') {
+            if ($authenticatedUser->id !== $id && $authenticatedUser->role->slug !== 'admin') {
                 return response()->json([
                     'success' => false,
                     'message' => 'You can only update your own profile',
                 ], Response::HTTP_FORBIDDEN);
             }
 
-            $user = $this->userRepository->findById($id);
-
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found',
-                ], Response::HTTP_NOT_FOUND);
-            }
+            $user = $targetUser;
 
             // Prepare update data
             $updateData = array_filter($request->validated(), function($value) {

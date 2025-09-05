@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -34,6 +35,23 @@ class UserFactory extends Factory
             'phone' => fake()->optional(0.7)->phoneNumber(),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    private function withRole(string $role): callable
+    {
+        return fn (array $attributes) => [
+            'role_id' => Role::bySlug($role)->first()->id,
+        ];
+    }
+
+    public function admin(): static
+    {
+        return $this->state($this->withRole('admin'));
+    }
+
+    public function manager(): static
+    {
+        return $this->state($this->withRole('manager'));
     }
 
     /**

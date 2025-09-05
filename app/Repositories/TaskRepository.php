@@ -252,7 +252,7 @@ class TaskRepository implements TaskRepositoryInterface
      */
     public function filter(\App\Repositories\Criteria\Task\TaskFilter $filter): Collection
     {
-        $query = $this->task->newQuery();
+        $query = $this->task->with(['project', 'assignedTo', 'createdBy'])->newQuery();
 
         // Apply all criteria
         $query = $filter->apply($query);

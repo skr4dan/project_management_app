@@ -67,7 +67,7 @@ class ProjectRepository implements ProjectRepositoryInterface
      */
     public function findByStatus(ProjectStatus $status): Collection
     {
-        return $this->project->where('status', $status->value)->get();
+        return $this->project->with('createdBy')->where('status', $status->value)->get();
     }
 
     /**
