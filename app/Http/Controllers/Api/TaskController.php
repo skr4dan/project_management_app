@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DTOs\PaginationDTO;
 use App\DTOs\Task\TaskDTO;
 use App\Enums\Task\TaskPriority;
 use App\Enums\Task\TaskStatus;
@@ -31,17 +32,26 @@ class TaskController extends Controller
             $user = $this->authService->user();
             $filters = $request->getFilters();
             $filter = new \App\Repositories\Criteria\Task\TaskFilter($filters);
+            $pagination = PaginationDTO::fromRequest($request->getPaginationData());
 
             if ($user->role->slug !== 'admin') {
                 // Add user filter criteria, so user can only see tasks assigned to them or created by them
                 $filter->addCriteria(new \App\Repositories\Criteria\Task\UserCriteria($user->id));
             }
 
-            $tasks = $this->taskRepository->filter($filter);
+            $tasks = $this->taskRepository->filter($filter, $pagination);
 
             return response()->json([
                 'success' => true,
                 'data' => TaskResource::collection($tasks),
+                'pagination' => [
+                    'current_page' => $tasks->currentPage(),
+                    'per_page' => $tasks->perPage(),
+                    'total' => $tasks->total(),
+                    'last_page' => $tasks->lastPage(),
+                    'from' => $tasks->firstItem(),
+                    'to' => $tasks->lastItem(),
+                ],
                 'message' => 'Tasks retrieved successfully',
             ], Response::HTTP_OK);
         } catch (\Exception $e) {

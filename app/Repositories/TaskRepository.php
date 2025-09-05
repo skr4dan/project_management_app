@@ -2,11 +2,13 @@
 
 namespace App\Repositories;
 
+use App\DTOs\PaginationDTO;
 use App\DTOs\Task\TaskDTO;
 use App\Enums\Task\TaskPriority;
 use App\Enums\Task\TaskStatus;
 use App\Models\Task;
 use App\Repositories\Contracts\TaskRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -248,15 +250,19 @@ class TaskRepository implements TaskRepositoryInterface
      * Filter tasks using criteria
      *
      * @param \App\Repositories\Criteria\Task\TaskFilter $filter
-     * @return Collection<int, Task>
+     * @param \App\DTOs\PaginationDTO $pagination
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function filter(\App\Repositories\Criteria\Task\TaskFilter $filter): Collection
+    public function filter(
+        \App\Repositories\Criteria\Task\TaskFilter $filter,
+        \App\DTOs\PaginationDTO $pagination = new PaginationDTO()
+    ): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $query = $this->task->with(['project', 'assignedTo', 'createdBy'])->newQuery();
 
         // Apply all criteria
         $query = $filter->apply($query);
 
-        return $query->get();
+        return $query->paginate($pagination->perPage, ['*'], 'page', $pagination->page);
     }
 }

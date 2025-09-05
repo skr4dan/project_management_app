@@ -112,14 +112,6 @@ readonly class UserDTO
         if (empty(trim($this->email))) {
             throw new \InvalidArgumentException('Email cannot be empty');
         }
-
-        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Invalid email format');
-        }
-
-        if (!empty($this->phone) && !preg_match('/^\+?[\d\s\-\(\)]+$/', $this->phone)) {
-            throw new \InvalidArgumentException('Invalid phone number format');
-        }
     }
 
     /**

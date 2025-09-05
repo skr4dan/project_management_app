@@ -148,7 +148,8 @@ interface TaskRepositoryInterface
      * Filter tasks using criteria
      *
      * @param \App\Repositories\Criteria\Task\TaskFilter $filter
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @param \App\DTOs\PaginationDTO $pagination
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function filter(\App\Repositories\Criteria\Task\TaskFilter $filter);
+    public function filter(\App\Repositories\Criteria\Task\TaskFilter $filter, \App\DTOs\PaginationDTO $pagination);
 }

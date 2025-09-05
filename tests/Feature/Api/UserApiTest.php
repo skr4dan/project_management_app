@@ -177,7 +177,6 @@ class UserApiTest extends TestCase
         ]);
 
         $token = $this->authenticateUser($user);
-
         $updateData = [
             'first_name' => 'Jane',
             'last_name' => 'Smith',

@@ -34,6 +34,8 @@ class TaskIndexRequest extends FormRequest
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
             'sort_by' => ['nullable', 'string', Rule::in($this->getSotrableFields())],
             'sort_order' => ['nullable', 'string', 'in:asc,desc'],
+            'per_page' => ['nullable', 'integer', 'min:1'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -99,6 +101,21 @@ class TaskIndexRequest extends FormRequest
         }
 
         return $filters;
+    }
+
+    /**
+     * Get pagination data from validated request
+     *
+     * @return array<string, int>
+     */
+    public function getPaginationData(): array
+    {
+        $validated = $this->validated();
+
+        return [
+            'per_page' => $validated['per_page'] ?? 15,
+            'page' => $validated['page'] ?? 1,
+        ];
     }
 
     /**

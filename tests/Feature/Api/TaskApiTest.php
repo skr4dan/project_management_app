@@ -19,9 +19,12 @@ class TaskApiTest extends TestCase
     #[Test]
     public function authenticated_user_can_list_tasks()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->manager()->create(); // Use manager role to ensure UserCriteria is applied
         $project = Project::factory()->create(['created_by' => $user->id]);
-        $tasks = Task::factory()->count(3)->create(['project_id' => $project->id]);
+        $tasks = Task::factory()->count(3)->create([
+            'project_id' => $project->id,
+            'created_by' => $user->id
+        ]);
 
         $token = $this->authenticateUser($user);
 
@@ -48,8 +51,24 @@ class TaskApiTest extends TestCase
                         'updated_at',
                     ],
                 ],
+                'pagination' => [
+                    'current_page',
+                    'per_page',
+                    'total',
+                    'last_page',
+                    'from',
+                    'to',
+                ],
                 'message',
             ]);
+
+        // Verify pagination metadata
+        $this->assertEquals(1, $response->json('pagination.current_page'));
+        $this->assertEquals(15, $response->json('pagination.per_page'));
+        $this->assertEquals(3, $response->json('pagination.total'));
+        $this->assertEquals(1, $response->json('pagination.last_page'));
+        $this->assertEquals(1, $response->json('pagination.from'));
+        $this->assertEquals(3, $response->json('pagination.to'));
     }
 
     #[Test]
@@ -552,5 +571,218 @@ class TaskApiTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['sort_by']);
+    }
+
+    #[Test]
+    public function user_can_paginate_tasks_with_custom_per_page()
+    {
+        $user = User::factory()->manager()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+
+        // Create 10 tasks
+        Task::factory()->count(10)->create([
+            'project_id' => $project->id,
+            'created_by' => $user->id
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks?per_page=5');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data',
+                'pagination',
+                'message',
+            ]);
+
+        // Verify pagination metadata
+        $this->assertCount(5, $response->json('data'));
+        $this->assertEquals(1, $response->json('pagination.current_page'));
+        $this->assertEquals(5, $response->json('pagination.per_page'));
+        $this->assertEquals(10, $response->json('pagination.total'));
+        $this->assertEquals(2, $response->json('pagination.last_page'));
+        $this->assertEquals(1, $response->json('pagination.from'));
+        $this->assertEquals(5, $response->json('pagination.to'));
+    }
+
+    #[Test]
+    public function user_can_navigate_to_specific_page()
+    {
+        $user = User::factory()->manager()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+
+        // Create 25 tasks to have multiple pages
+        $tasks = Task::factory()->count(25)->create([
+            'project_id' => $project->id,
+            'created_by' => $user->id
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks?page=2&per_page=10');
+
+        $response->assertStatus(200);
+
+        // Verify we're on page 2
+        $this->assertCount(10, $response->json('data'));
+        $this->assertEquals(2, $response->json('pagination.current_page'));
+        $this->assertEquals(10, $response->json('pagination.per_page'));
+        $this->assertEquals(25, $response->json('pagination.total'));
+        $this->assertEquals(3, $response->json('pagination.last_page'));
+        $this->assertEquals(11, $response->json('pagination.from'));
+        $this->assertEquals(20, $response->json('pagination.to'));
+    }
+
+    #[Test]
+    public function user_can_paginate_with_filters()
+    {
+        $user = User::factory()->manager()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+
+        // Create tasks with different statuses
+        Task::factory()->count(8)->create([
+            'project_id' => $project->id,
+            'status' => TaskStatus::Pending,
+            'created_by' => $user->id,
+        ]);
+
+        Task::factory()->count(5)->create([
+            'project_id' => $project->id,
+            'status' => TaskStatus::Completed,
+            'created_by' => $user->id,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks?status=pending&per_page=5');
+
+        $response->assertStatus(200);
+
+        // Should only get pending tasks, paginated
+        $this->assertCount(5, $response->json('data'));
+        $this->assertEquals(8, $response->json('pagination.total'));
+        $this->assertEquals(2, $response->json('pagination.last_page'));
+
+        // Verify all returned tasks are pending
+        foreach ($response->json('data') as $task) {
+            $this->assertEquals('pending', $task['status']);
+        }
+    }
+
+    #[Test]
+    public function pagination_validation_rejects_invalid_per_page()
+    {
+        $user = User::factory()->create();
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks?per_page=0');
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['per_page']);
+    }
+
+    #[Test]
+    public function pagination_validation_rejects_negative_per_page()
+    {
+        $user = User::factory()->create();
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks?per_page=-1');
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['per_page']);
+    }
+
+    #[Test]
+    public function pagination_validation_rejects_invalid_page()
+    {
+        $user = User::factory()->create();
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks?page=0');
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['page']);
+    }
+
+    #[Test]
+    public function pagination_validation_rejects_negative_page()
+    {
+        $user = User::factory()->create();
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks?page=-1');
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['page']);
+    }
+
+    #[Test]
+    public function user_can_request_last_page_of_paginated_results()
+    {
+        $user = User::factory()->manager()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+
+        // Create 23 tasks (will result in 2 pages with per_page=15, and 1 page with per_page=10)
+        Task::factory()->count(23)->create([
+            'project_id' => $project->id,
+            'created_by' => $user->id
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        // Request last page
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks?page=2&per_page=15');
+
+        $response->assertStatus(200);
+
+        // Should be on page 2 with remaining items
+        $this->assertCount(8, $response->json('data')); // 23 - 15 = 8
+        $this->assertEquals(2, $response->json('pagination.current_page'));
+        $this->assertEquals(15, $response->json('pagination.per_page'));
+        $this->assertEquals(23, $response->json('pagination.total'));
+        $this->assertEquals(2, $response->json('pagination.last_page'));
+        $this->assertEquals(16, $response->json('pagination.from'));
+        $this->assertEquals(23, $response->json('pagination.to'));
+    }
+
+    #[Test]
+    public function pagination_returns_empty_data_for_page_beyond_results()
+    {
+        $user = User::factory()->manager()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+
+        // Create only 5 tasks
+        Task::factory()->count(5)->create([
+            'project_id' => $project->id,
+            'created_by' => $user->id
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        // Request page 2 when there's only 1 page
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks?page=2');
+
+        $response->assertStatus(200);
+
+        // Should return empty data but still have pagination metadata
+        $this->assertCount(0, $response->json('data'));
+        $this->assertEquals(2, $response->json('pagination.current_page'));
+        $this->assertEquals(15, $response->json('pagination.per_page'));
+        $this->assertEquals(5, $response->json('pagination.total'));
+        $this->assertEquals(1, $response->json('pagination.last_page'));
+        $this->assertNull($response->json('pagination.from'));
+        $this->assertNull($response->json('pagination.to'));
     }
 }
