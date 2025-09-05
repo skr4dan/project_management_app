@@ -50,7 +50,7 @@ class ProjectRepositoryTest extends TestCase
         Project::factory()->count(2)->create(['created_by' => $user->id]);
         Project::factory()->count(1)->create(); // Different owner
 
-        $projects = $this->projectRepository->findByOwner($user->id);
+        $projects = $this->projectRepository->getByOwner($user->id);
 
         $this->assertCount(2, $projects);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $projects);
@@ -65,7 +65,7 @@ class ProjectRepositoryTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $projects = $this->projectRepository->findByOwner($user->id);
+        $projects = $this->projectRepository->getByOwner($user->id);
 
         $this->assertCount(0, $projects);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $projects);
@@ -77,7 +77,7 @@ class ProjectRepositoryTest extends TestCase
         Project::factory()->count(2)->create(['status' => ProjectStatus::Active->value]);
         Project::factory()->count(1)->create(['status' => ProjectStatus::Completed->value]);
 
-        $projects = $this->projectRepository->findByStatus(ProjectStatus::Active);
+        $projects = $this->projectRepository->getByStatus(ProjectStatus::Active);
 
         $this->assertCount(2, $projects);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $projects);

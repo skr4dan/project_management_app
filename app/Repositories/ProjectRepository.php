@@ -49,23 +49,23 @@ class ProjectRepository implements ProjectRepositoryInterface
     }
 
     /**
-     * Find projects by owner
+     * Get projects by owner
      *
      * @param int $userId
      * @return Collection<int, Project>
      */
-    public function findByOwner(int $userId): Collection
+    public function getByOwner(int $userId): Collection
     {
         return $this->project->where('created_by', $userId)->get();
     }
 
     /**
-     * Find projects by status
+     * Get projects by status
      *
      * @param ProjectStatus $status
      * @return Collection<int, Project>
      */
-    public function findByStatus(ProjectStatus $status): Collection
+    public function getByStatus(ProjectStatus $status): Collection
     {
         return $this->project->with('createdBy')->where('status', $status->value)->get();
     }
@@ -77,7 +77,7 @@ class ProjectRepository implements ProjectRepositoryInterface
      */
     public function getActiveProjects(): Collection
     {
-        return $this->findByStatus(ProjectStatus::Active);
+        return $this->getByStatus(ProjectStatus::Active);
     }
 
     /**
@@ -87,7 +87,7 @@ class ProjectRepository implements ProjectRepositoryInterface
      */
     public function getCompletedProjects(): Collection
     {
-        return $this->findByStatus(ProjectStatus::Completed);
+        return $this->getByStatus(ProjectStatus::Completed);
     }
 
     /**
@@ -209,7 +209,7 @@ class ProjectRepository implements ProjectRepositoryInterface
      */
     public function getUserProjectStatistics(int $userId): array
     {
-        $projects = $this->findByOwner($userId);
+        $projects = $this->getByOwner($userId);
 
         return [
             'total' => $projects->count(),

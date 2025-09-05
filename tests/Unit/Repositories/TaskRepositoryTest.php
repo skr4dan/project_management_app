@@ -53,7 +53,7 @@ class TaskRepositoryTest extends TestCase
         Task::factory()->count(3)->create(['project_id' => $project->id]);
         Task::factory()->count(2)->create(); // Different project
 
-        $tasks = $this->taskRepository->findByProject($project->id);
+        $tasks = $this->taskRepository->getByProject($project->id);
 
         $this->assertCount(3, $tasks);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
@@ -70,7 +70,7 @@ class TaskRepositoryTest extends TestCase
         Task::factory()->count(2)->create(['assigned_to' => $user->id]);
         Task::factory()->count(1)->create(); // Different assignee
 
-        $tasks = $this->taskRepository->findByAssignee($user->id);
+        $tasks = $this->taskRepository->getByAssignee($user->id);
 
         $this->assertCount(2, $tasks);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
@@ -86,7 +86,7 @@ class TaskRepositoryTest extends TestCase
         Task::factory()->count(3)->create(['created_by' => $user->id]);
         Task::factory()->count(1)->create(); // Different creator
 
-        $tasks = $this->taskRepository->findByCreator($user->id);
+        $tasks = $this->taskRepository->getByCreator($user->id);
 
         $this->assertCount(3, $tasks);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
@@ -101,7 +101,7 @@ class TaskRepositoryTest extends TestCase
         Task::factory()->count(2)->create(['status' => TaskStatus::Completed->value]);
         Task::factory()->count(3)->create(['status' => TaskStatus::Pending->value]);
 
-        $tasks = $this->taskRepository->findByStatus(TaskStatus::Completed);
+        $tasks = $this->taskRepository->getByStatus(TaskStatus::Completed);
 
         $this->assertCount(2, $tasks);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
@@ -116,7 +116,7 @@ class TaskRepositoryTest extends TestCase
         Task::factory()->count(2)->create(['priority' => TaskPriority::High->value]);
         Task::factory()->count(1)->create(['priority' => TaskPriority::Medium->value]);
 
-        $tasks = $this->taskRepository->findByPriority(TaskPriority::High);
+        $tasks = $this->taskRepository->getByPriority(TaskPriority::High);
 
         $this->assertCount(2, $tasks);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);

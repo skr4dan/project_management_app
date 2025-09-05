@@ -22,44 +22,44 @@ interface TaskRepositoryInterface
     public function findById(int $id);
 
     /**
-     * Find tasks by project
+     * Get tasks by project
      *
      * @param int $projectId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByProject(int $projectId);
+    public function getByProject(int $projectId);
 
     /**
-     * Find tasks by assignee
+     * Get tasks by assignee
      *
      * @param int $userId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByAssignee(int $userId);
+    public function getByAssignee(int $userId);
 
     /**
-     * Find tasks by creator
+     * Get tasks by creator
      *
      * @param int $userId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByCreator(int $userId);
+    public function getByCreator(int $userId);
 
     /**
-     * Find tasks by status
+     * Get tasks by status
      *
      * @param TaskStatus $status
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByStatus(TaskStatus $status);
+    public function getByStatus(TaskStatus $status);
 
     /**
-     * Find tasks by priority
+     * Get tasks by priority
      *
      * @param TaskPriority $priority
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByPriority(TaskPriority $priority);
+    public function getByPriority(TaskPriority $priority);
 
     /**
      * Get overdue tasks

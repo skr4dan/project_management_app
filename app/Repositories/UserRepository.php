@@ -71,23 +71,23 @@ class UserRepository implements UserRepositoryInterface
     }
 
     /**
-     * Find users by role
+     * Get users by role
      *
      * @param int $roleId
      * @return Collection<int, User>
      */
-    public function findByRole(int $roleId): Collection
+    public function getByRole(int $roleId): Collection
     {
         return $this->user->where('role_id', $roleId)->get();
     }
 
     /**
-     * Find users by status
+     * Get users by status
      *
      * @param UserStatus $status
      * @return Collection<int, User>
      */
-    public function findByStatus(UserStatus $status): Collection
+    public function getByStatus(UserStatus $status): Collection
     {
         return $this->user->with('role')->where('status', $status->value)->get();
     }
@@ -99,7 +99,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function getActiveUsers(): Collection
     {
-        return $this->findByStatus(UserStatus::Active);
+        return $this->getByStatus(UserStatus::Active);
     }
 
     /**

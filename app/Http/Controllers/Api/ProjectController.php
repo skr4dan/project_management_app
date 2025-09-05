@@ -32,7 +32,7 @@ class ProjectController extends Controller
             if (is_null($status)) {
                 $projects = $this->projectRepository->getActiveProjects();
             } else {
-                $projects = $this->projectRepository->findByStatus(ProjectStatus::from($status));
+                $projects = $this->projectRepository->getByStatus(ProjectStatus::from($status));
             }
 
             return response()->json([

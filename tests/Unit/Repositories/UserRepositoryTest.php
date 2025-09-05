@@ -70,7 +70,7 @@ class UserRepositoryTest extends TestCase
         User::factory()->count(2)->create(['role_id' => $role->id]);
         User::factory()->count(1)->create(); // Different role
 
-        $users = $this->userRepository->findByRole($role->id);
+        $users = $this->userRepository->getByRole($role->id);
 
         $this->assertCount(2, $users);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $users);
@@ -85,7 +85,7 @@ class UserRepositoryTest extends TestCase
         User::factory()->count(3)->create(['status' => \App\Enums\User\UserStatus::Active->value]);
         User::factory()->count(2)->create(['status' => \App\Enums\User\UserStatus::Inactive->value]);
 
-        $users = $this->userRepository->findByStatus(\App\Enums\User\UserStatus::Active);
+        $users = $this->userRepository->getByStatus(\App\Enums\User\UserStatus::Active);
 
         $this->assertCount(3, $users);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $users);

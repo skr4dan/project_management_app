@@ -29,20 +29,20 @@ interface UserRepositoryInterface
     public function findByEmail(string $email);
 
     /**
-     * Find users by role
+     * Get users by role
      *
      * @param int $roleId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByRole(int $roleId);
+    public function getByRole(int $roleId);
 
     /**
-     * Find users by status
+     * Get users by status
      *
      * @param UserStatus $status
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByStatus(UserStatus $status);
+    public function getByStatus(UserStatus $status);
 
     /**
      * Get active users

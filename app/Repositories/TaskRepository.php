@@ -51,56 +51,56 @@ class TaskRepository implements TaskRepositoryInterface
     }
 
     /**
-     * Find tasks by project
+     * Get tasks by project
      *
      * @param int $projectId
      * @return Collection<int, Task>
      */
-    public function findByProject(int $projectId): Collection
+    public function getByProject(int $projectId): Collection
     {
         return $this->task->where('project_id', $projectId)->get();
     }
 
     /**
-     * Find tasks by assignee
+     * Get tasks by assignee
      *
      * @param int $userId
      * @return Collection<int, Task>
      */
-    public function findByAssignee(int $userId): Collection
+    public function getByAssignee(int $userId): Collection
     {
         return $this->task->where('assigned_to', $userId)->get();
     }
 
     /**
-     * Find tasks by creator
+     * Get tasks by creator
      *
      * @param int $userId
      * @return Collection<int, Task>
      */
-    public function findByCreator(int $userId): Collection
+    public function getByCreator(int $userId): Collection
     {
         return $this->task->where('created_by', $userId)->get();
     }
 
     /**
-     * Find tasks by status
+     * Get tasks by status
      *
      * @param TaskStatus $status
      * @return Collection<int, Task>
      */
-    public function findByStatus(TaskStatus $status): Collection
+    public function getByStatus(TaskStatus $status): Collection
     {
         return $this->task->where('status', $status->value)->get();
     }
 
     /**
-     * Find tasks by priority
+     * Get tasks by priority
      *
      * @param TaskPriority $priority
      * @return Collection<int, Task>
      */
-    public function findByPriority(TaskPriority $priority): Collection
+    public function getByPriority(TaskPriority $priority): Collection
     {
         return $this->task->where('priority', $priority->value)->get();
     }
@@ -216,7 +216,7 @@ class TaskRepository implements TaskRepositoryInterface
      */
     public function getProjectStatistics(int $projectId): array
     {
-        $tasks = $this->findByProject($projectId);
+        $tasks = $this->getByProject($projectId);
 
         return [
             'total' => $tasks->count(),
@@ -235,7 +235,7 @@ class TaskRepository implements TaskRepositoryInterface
      */
     public function getUserStatistics(int $userId): array
     {
-        $tasks = $this->findByAssignee($userId);
+        $tasks = $this->getByAssignee($userId);
 
         return [
             'total' => $tasks->count(),

@@ -21,20 +21,20 @@ interface ProjectRepositoryInterface
     public function findById(int $id);
 
     /**
-     * Find projects by owner
+     * Get projects by owner
      *
      * @param int $userId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByOwner(int $userId);
+    public function getByOwner(int $userId);
 
     /**
-     * Find projects by status
+     * Get projects by status
      *
      * @param ProjectStatus $status
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByStatus(ProjectStatus $status);
+    public function getByStatus(ProjectStatus $status);
 
     /**
      * Get active projects
