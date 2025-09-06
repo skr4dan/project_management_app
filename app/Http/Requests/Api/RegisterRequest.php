@@ -18,7 +18,7 @@ class RegisterRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, list<string>>
+     * @return array<string, array<int, string|\Illuminate\Contracts\Validation\Rule>>
      */
     public function rules(): array
     {

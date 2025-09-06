@@ -6,18 +6,12 @@ use App\DTOs\Statistics\StatisticsDTO;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use App\Repositories\Contracts\ProjectRepositoryInterface;
-use App\Repositories\Contracts\TaskRepositoryInterface;
-use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Contracts\StatisticsServiceInterface;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 
 class StatisticsService implements StatisticsServiceInterface
 {
     public function __construct(
-        private readonly ProjectRepositoryInterface $projectRepository,
-        private readonly TaskRepositoryInterface $taskRepository,
-        private readonly UserRepositoryInterface $userRepository,
         private readonly CacheRepository $cache,
     ) {}
 
@@ -87,7 +81,10 @@ class StatisticsService implements StatisticsServiceInterface
                 ->selectRaw('status, COUNT(*) as count')
                 ->groupBy('status')
                 ->get()
-                ->mapWithKeys(fn ($item) => [$item->status->value => $item->count])
+                ->mapWithKeys(function ($item) {
+                    /** @phpstan-ignore-next-line */
+                    return [$item->status->value => $item->count];
+                })
                 ->sortKeys() // Sort by status for consistent output
                 ->toArray();
         });
@@ -121,12 +118,15 @@ class StatisticsService implements StatisticsServiceInterface
                 ->orderByDesc('task_count')
                 ->limit(5)
                 ->get()
-                ->map(fn ($user) => [
-                    'id' => $user->id,
-                    'name' => trim("{$user->first_name} {$user->last_name}"),
-                    'email' => $user->email,
-                    'task_count' => (int) $user->task_count,
-                ])
+                ->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => trim("{$user->first_name} {$user->last_name}"),
+                        'email' => $user->email,
+                        /** @phpstan-ignore-next-line */
+                        'task_count' => (int) $user->task_count,
+                    ];
+                })
                 ->toArray();
         });
     }

@@ -50,7 +50,7 @@ class Project extends Model
     /**
      * Get the user who created the project.
      *
-     * @return BelongsTo<User, Project> The creator user relationship
+     * @return BelongsTo<User, covariant Project>
      */
     public function createdBy(): BelongsTo
     {
@@ -60,7 +60,7 @@ class Project extends Model
     /**
      * Get the tasks for the project.
      *
-     * @return HasMany<Task, Project> The tasks relationship
+     * @return HasMany<Task, covariant Project>
      */
     public function tasks(): HasMany
     {

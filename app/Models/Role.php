@@ -60,7 +60,7 @@ class Role extends Model
     /**
      * Get the users for the role.
      *
-     * @return HasMany<User, Role> The users relationship
+     * @return HasMany<User, covariant Role> The users relationship
      */
     public function users(): HasMany
     {

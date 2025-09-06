@@ -19,7 +19,7 @@ class ProjectResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'status' => $this->status?->value,
+            'status' => $this->status->value,
             'created_by' => $this->whenLoaded('createdBy', function () {
                 return [
                     'id' => $this->createdBy->id,
@@ -31,8 +31,8 @@ class ProjectResource extends JsonResource
             'tasks_count' => $this->whenLoaded('tasks', function () {
                 return $this->tasks->count();
             }),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
         ];
     }
 }

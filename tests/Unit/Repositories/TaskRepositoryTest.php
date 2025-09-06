@@ -56,7 +56,6 @@ class TaskRepositoryTest extends TestCase
 
         $this->assertCount(3, $tasks);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $tasks);
-        $this->assertContainsOnlyInstancesOf(Task::class, $tasks);
         $tasks->each(function ($task) use ($project) {
             $this->assertEquals($project->id, $task->project_id);
         });
@@ -343,8 +342,6 @@ class TaskRepositoryTest extends TestCase
         ]);
 
         $stats = $this->taskRepository->getProjectStatistics($project->id);
-
-        $this->assertIsArray($stats);
         $this->assertArrayHasKey('total', $stats);
         $this->assertArrayHasKey('completed', $stats);
         $this->assertArrayHasKey('pending', $stats);
@@ -368,8 +365,6 @@ class TaskRepositoryTest extends TestCase
         ]);
 
         $stats = $this->taskRepository->getUserStatistics($user->id);
-
-        $this->assertIsArray($stats);
         $this->assertArrayHasKey('total', $stats);
         $this->assertArrayHasKey('completed', $stats);
         $this->assertArrayHasKey('in_progress', $stats);
@@ -386,6 +381,7 @@ class TaskRepositoryTest extends TestCase
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter(['status' => TaskStatus::Completed->value]);
         $paginator = $this->taskRepository->filter($filter);
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
         $tasks = $paginator->getCollection();
 
         $this->assertCount(2, $tasks);
@@ -403,6 +399,7 @@ class TaskRepositoryTest extends TestCase
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter(['priority' => TaskPriority::High->value]);
         $paginator = $this->taskRepository->filter($filter);
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
         $tasks = $paginator->getCollection();
 
         $this->assertCount(2, $tasks);
@@ -422,6 +419,7 @@ class TaskRepositoryTest extends TestCase
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter(['project_id' => $project1->id]);
         $paginator = $this->taskRepository->filter($filter);
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
         $tasks = $paginator->getCollection();
 
         $this->assertCount(3, $tasks);
@@ -441,6 +439,7 @@ class TaskRepositoryTest extends TestCase
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter(['assigned_to' => $user1->id]);
         $paginator = $this->taskRepository->filter($filter);
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
         $tasks = $paginator->getCollection();
 
         $this->assertCount(2, $tasks);
@@ -485,6 +484,7 @@ class TaskRepositoryTest extends TestCase
         ]);
 
         $paginator = $this->taskRepository->filter($filter);
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
         $tasks = $paginator->getCollection();
 
         $this->assertCount(2, $tasks);
@@ -535,6 +535,7 @@ class TaskRepositoryTest extends TestCase
         ]);
 
         $paginator = $this->taskRepository->filter($filter);
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
         $tasks = $paginator->getCollection();
 
         $this->assertCount(3, $tasks);
@@ -555,6 +556,7 @@ class TaskRepositoryTest extends TestCase
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter([]);
         $paginator = $this->taskRepository->filter($filter);
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
         $tasks = $paginator->getCollection();
 
         $this->assertCount(5, $tasks);

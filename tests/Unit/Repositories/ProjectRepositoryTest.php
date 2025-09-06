@@ -54,7 +54,6 @@ class ProjectRepositoryTest extends TestCase
 
         $this->assertCount(2, $projects);
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $projects);
-        $this->assertContainsOnlyInstancesOf(Project::class, $projects);
         $projects->each(function ($project) use ($user) {
             $this->assertEquals($user->id, $project->created_by);
         });
@@ -338,8 +337,6 @@ class ProjectRepositoryTest extends TestCase
         ]);
 
         $stats = $this->projectRepository->getUserProjectStatistics($user->id);
-
-        $this->assertIsArray($stats);
         $this->assertArrayHasKey('total', $stats);
         $this->assertArrayHasKey('active', $stats);
         $this->assertArrayHasKey('completed', $stats);

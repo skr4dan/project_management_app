@@ -19,8 +19,8 @@ class TaskResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'status' => $this->status?->value,
-            'priority' => $this->priority?->value,
+            'status' => $this->status->value,
+            'priority' => $this->priority->value,
             'project' => $this->whenLoaded('project', function () {
                 return [
                     'id' => $this->project->id,
@@ -44,8 +44,8 @@ class TaskResource extends JsonResource
                 ];
             }),
             'due_date' => $this->due_date?->toISOString(),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
         ];
     }
 }

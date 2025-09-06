@@ -17,7 +17,7 @@ return new class extends Migration
 
             // Add new columns
             $table->string('last_name')->nullable()->after('first_name');
-            $table->foreignId('role_id')->nullable()->constrained()->after('password');
+            $table->foreignId('role_id')->nullable()->after('password')->constrained();
             $table->enum('status', ['active', 'inactive', 'blocked'])->default('active')->after('role_id');
             $table->string('avatar')->nullable()->after('status');
             $table->string('phone')->nullable()->after('avatar');

@@ -101,7 +101,7 @@ class AuthService implements AuthServiceInterface
      */
     public function logout(): void
     {
-        JWTAuth::invalidate(JWTAuth::getToken());
+        JWTAuth::invalidate();
     }
 
     /**
@@ -123,7 +123,9 @@ class AuthService implements AuthServiceInterface
      */
     public function user(): ?User
     {
-        return JWTAuth::user();
+        /** @var User|null $user */
+        $user = JWTAuth::user();
+        return $user;
     }
 
     /**

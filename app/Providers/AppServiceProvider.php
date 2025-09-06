@@ -34,9 +34,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuthServiceInterface::class, AuthService::class);
         $this->app->bind(StatisticsServiceInterface::class, function ($app) {
             return new StatisticsService(
-                $app->make(\App\Repositories\Contracts\ProjectRepositoryInterface::class),
-                $app->make(\App\Repositories\Contracts\TaskRepositoryInterface::class),
-                $app->make(\App\Repositories\Contracts\UserRepositoryInterface::class),
                 $app->make(Repository::class)
             );
         });

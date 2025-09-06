@@ -102,7 +102,7 @@ class User extends Authenticatable implements JWTSubject
     /**
      * Get the role that belongs to the user.
      *
-     * @return BelongsTo<Role, User> The role relationship
+     * @return BelongsTo<Role, covariant User> The role relationship
      */
     public function role(): BelongsTo
     {

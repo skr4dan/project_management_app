@@ -27,6 +27,8 @@ class RoleMiddleware
                 ], Response::HTTP_UNAUTHORIZED);
             }
 
+            // Cast to User model to access role relationship
+            /** @var \App\Models\User $user */
             if (! $user->role) {
                 return response()->json([
                     'success' => false,

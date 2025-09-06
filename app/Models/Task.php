@@ -61,7 +61,7 @@ class Task extends Model
     /**
      * Get the project that owns the task.
      *
-     * @return BelongsTo<Project, Task> The project relationship
+     * @return BelongsTo<Project, covariant Task> The project relationship
      */
     public function project(): BelongsTo
     {
@@ -71,7 +71,7 @@ class Task extends Model
     /**
      * Get the user that the task is assigned to.
      *
-     * @return BelongsTo<User, Task> The assigned user relationship
+     * @return BelongsTo<User, covariant Task> The assigned user relationship
      */
     public function assignedTo(): BelongsTo
     {
@@ -81,7 +81,7 @@ class Task extends Model
     /**
      * Get the user who created the task.
      *
-     * @return BelongsTo<User, Task> The creator user relationship
+     * @return BelongsTo<User, covariant Task> The creator user relationship
      */
     public function createdBy(): BelongsTo
     {

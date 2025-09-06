@@ -125,7 +125,7 @@ readonly class RoleDTO
 
         // Validate permissions format
         foreach ($this->permissions as $permission) {
-            if (! is_string($permission) || empty(trim($permission))) {
+            if (empty(trim($permission))) {
                 throw new \InvalidArgumentException('All permissions must be non-empty strings');
             }
 

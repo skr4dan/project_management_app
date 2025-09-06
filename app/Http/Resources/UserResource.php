@@ -25,11 +25,11 @@ class UserResource extends JsonResource
                 'slug' => $this->role->slug,
                 'name' => $this->role->name,
             ],
-            'status' => $this->status?->value,
+            'status' => $this->status->value,
             'avatar' => $this->avatar ? asset('storage/'.$this->avatar) : null,
             'phone' => $this->phone,
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
         ];
     }
 }

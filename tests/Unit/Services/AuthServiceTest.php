@@ -13,6 +13,7 @@ use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\AuthService;
 use Illuminate\Support\Facades\Hash;
 use Mockery;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -33,6 +34,7 @@ class AuthServiceTest extends TestCase
 
         $this->userRepositoryMock = Mockery::mock(UserRepositoryInterface::class);
         $this->roleRepositoryMock = Mockery::mock(RoleRepositoryInterface::class);
+        /** @phpstan-ignore-next-line */
         $this->authService = new AuthService($this->userRepositoryMock, $this->roleRepositoryMock);
 
         $this->user = new User([
@@ -165,22 +167,15 @@ class AuthServiceTest extends TestCase
     }
 
     #[Test]
+    #[DoesNotPerformAssertions]
     public function it_can_logout_user()
     {
-        JWTAuth::shouldReceive('getToken')
-            ->once()
-            ->withNoArgs()
-            ->andReturn('jwt-token-123');
-
         JWTAuth::shouldReceive('invalidate')
             ->once()
-            ->with('jwt-token-123')
+            ->withNoArgs()
             ->andReturn(true);
 
         $this->authService->logout();
-
-        // No assertions needed, just verifying the method runs without errors
-        $this->assertTrue(true);
     }
 
     #[Test]
