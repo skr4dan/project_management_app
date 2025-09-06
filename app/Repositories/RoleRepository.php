@@ -25,17 +25,9 @@ class RoleRepository implements RoleRepositoryInterface
     /**
      * Find role by ID
      */
-    public function find(int $id): ?Role
-    {
-        return $this->role->find($id);
-    }
-
-    /**
-     * Find role by ID
-     */
     public function findById(int $id): ?Role
     {
-        return $this->find($id);
+        return $this->role->find($id);
     }
 
     /**
@@ -69,7 +61,7 @@ class RoleRepository implements RoleRepositoryInterface
      */
     public function updateFromDTO(int $id, RoleDTO $roleDTO): bool
     {
-        $role = $this->find($id);
+        $role = $this->findById($id);
 
         return $role ? $role->update($roleDTO->toModelArray()) : false;
     }
@@ -81,7 +73,7 @@ class RoleRepository implements RoleRepositoryInterface
      */
     public function updatePermissions(int $id, array $permissions): bool
     {
-        $role = $this->find($id);
+        $role = $this->findById($id);
 
         return $role ? $role->update(['permissions' => $permissions]) : false;
     }
@@ -91,7 +83,7 @@ class RoleRepository implements RoleRepositoryInterface
      */
     public function addPermission(int $roleId, string $permission): bool
     {
-        $role = $this->find($roleId);
+        $role = $this->findById($roleId);
 
         if (! $role) {
             return false;
@@ -112,7 +104,7 @@ class RoleRepository implements RoleRepositoryInterface
      */
     public function removePermission(int $roleId, string $permission): bool
     {
-        $role = $this->find($roleId);
+        $role = $this->findById($roleId);
 
         if (! $role) {
             return false;
@@ -129,7 +121,7 @@ class RoleRepository implements RoleRepositoryInterface
      */
     public function hasPermission(int $roleId, string $permission): bool
     {
-        $role = $this->find($roleId);
+        $role = $this->findById($roleId);
 
         if (! $role) {
             return false;
@@ -143,7 +135,7 @@ class RoleRepository implements RoleRepositoryInterface
      */
     public function getUsersCount(int $roleId): int
     {
-        $role = $this->find($roleId);
+        $role = $this->findById($roleId);
 
         return $role ? $role->users()->count() : 0;
     }
@@ -153,7 +145,7 @@ class RoleRepository implements RoleRepositoryInterface
      */
     public function activate(int $id): bool
     {
-        $role = $this->find($id);
+        $role = $this->findById($id);
 
         return $role ? $role->update(['is_active' => true]) : false;
     }
@@ -163,7 +155,7 @@ class RoleRepository implements RoleRepositoryInterface
      */
     public function deactivate(int $id): bool
     {
-        $role = $this->find($id);
+        $role = $this->findById($id);
 
         return $role ? $role->update(['is_active' => false]) : false;
     }

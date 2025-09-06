@@ -28,17 +28,9 @@ class TaskRepository implements TaskRepositoryInterface
     /**
      * Find task by ID
      */
-    public function find(int $id): ?Task
-    {
-        return $this->task->find($id);
-    }
-
-    /**
-     * Find task by ID
-     */
     public function findById(int $id): ?Task
     {
-        return $this->find($id);
+        return $this->task->find($id);
     }
 
     /**
@@ -131,7 +123,7 @@ class TaskRepository implements TaskRepositoryInterface
      */
     public function updateFromDTO(int $id, TaskDTO $taskDTO): bool
     {
-        $task = $this->find($id);
+        $task = $this->findById($id);
 
         return $task ? $task->update($taskDTO->toModelArray()) : false;
     }
@@ -141,7 +133,7 @@ class TaskRepository implements TaskRepositoryInterface
      */
     public function updateStatus(int $id, TaskStatus $status): bool
     {
-        $task = $this->find($id);
+        $task = $this->findById($id);
 
         return $task ? $task->update(['status' => $status->value]) : false;
     }
@@ -151,7 +143,7 @@ class TaskRepository implements TaskRepositoryInterface
      */
     public function updatePriority(int $id, TaskPriority $priority): bool
     {
-        $task = $this->find($id);
+        $task = $this->findById($id);
 
         return $task ? $task->update(['priority' => $priority->value]) : false;
     }
@@ -161,7 +153,7 @@ class TaskRepository implements TaskRepositoryInterface
      */
     public function assignToUser(int $taskId, int $userId): bool
     {
-        $task = $this->find($taskId);
+        $task = $this->findById($taskId);
 
         return $task ? $task->update(['assigned_to' => $userId]) : false;
     }
@@ -171,7 +163,7 @@ class TaskRepository implements TaskRepositoryInterface
      */
     public function unassignFromUser(int $taskId): bool
     {
-        $task = $this->find($taskId);
+        $task = $this->findById($taskId);
 
         return $task ? $task->update(['assigned_to' => null]) : false;
     }

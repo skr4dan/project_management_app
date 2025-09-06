@@ -27,17 +27,9 @@ class ProjectRepository implements ProjectRepositoryInterface
     /**
      * Find project by ID
      */
-    public function find(int $id): ?Project
-    {
-        return $this->project->find($id);
-    }
-
-    /**
-     * Find project by ID
-     */
     public function findById(int $id): ?Project
     {
-        return $this->find($id);
+        return $this->project->find($id);
     }
 
     /**
@@ -93,7 +85,7 @@ class ProjectRepository implements ProjectRepositoryInterface
      */
     public function updateFromDTO(int $id, ProjectDTO $projectDTO): bool
     {
-        $project = $this->find($id);
+        $project = $this->findById($id);
 
         return $project ? $project->update($projectDTO->toModelArray()) : false;
     }
@@ -103,7 +95,7 @@ class ProjectRepository implements ProjectRepositoryInterface
      */
     public function updateStatus(int $id, ProjectStatus $status): bool
     {
-        $project = $this->find($id);
+        $project = $this->findById($id);
 
         return $project ? $project->update(['status' => $status->value]) : false;
     }

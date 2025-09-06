@@ -26,17 +26,9 @@ class UserRepository implements UserRepositoryInterface
     /**
      * Find user by ID
      */
-    public function find(int $id): ?User
-    {
-        return $this->user->find($id);
-    }
-
-    /**
-     * Find user by ID
-     */
     public function findById(int $id): ?User
     {
-        return $this->find($id);
+        return $this->user->find($id);
     }
 
     /**
@@ -100,7 +92,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function updateFromDTO(int $id, UserDTO $userDTO): bool
     {
-        $user = $this->find($id);
+        $user = $this->findById($id);
 
         return $user ? $user->update($userDTO->toModelArray()) : false;
     }
@@ -124,7 +116,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function updateStatus(int $id, UserStatus $status): bool
     {
-        $user = $this->find($id);
+        $user = $this->findById($id);
 
         return $user ? $user->update(['status' => $status->value]) : false;
     }
@@ -134,7 +126,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function assignRole(int $userId, int $roleId): bool
     {
-        $user = $this->find($userId);
+        $user = $this->findById($userId);
 
         return $user ? $user->update(['role_id' => $roleId]) : false;
     }
@@ -144,7 +136,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function removeRole(int $userId): bool
     {
-        $user = $this->find($userId);
+        $user = $this->findById($userId);
 
         return $user ? $user->update(['role_id' => null]) : false;
     }
