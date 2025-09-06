@@ -372,4 +372,234 @@ class UserApiTest extends TestCase
                 'message' => 'User not found',
             ]);
     }
+
+    #[Test]
+    public function user_resource_returns_correct_structure_with_role_loaded()
+    {
+        $user = User::factory()->create(['status' => \App\Enums\User\UserStatus::Active->value]);
+        $adminRole = Role::bySlug('admin')->first();
+        $user->update(['role_id' => $adminRole->id]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/users/{$user->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'id',
+                    'first_name',
+                    'last_name',
+                    'email',
+                    'role' => [
+                        'id',
+                        'slug',
+                        'name',
+                    ],
+                    'status',
+                    'avatar',
+                    'phone',
+                    'created_at',
+                    'updated_at',
+                ],
+                'message',
+            ]);
+
+        // Verify the actual data structure
+        $data = $response->json('data');
+        $this->assertEquals($user->id, $data['id']);
+        $this->assertEquals($user->first_name, $data['first_name']);
+        $this->assertEquals($user->last_name, $data['last_name']);
+        $this->assertEquals($user->email, $data['email']);
+        $this->assertEquals($user->status->value, $data['status']);
+
+        // Verify role relationship
+        $this->assertEquals($adminRole->id, $data['role']['id']);
+        $this->assertEquals($adminRole->slug, $data['role']['slug']);
+        $this->assertEquals($adminRole->name, $data['role']['name']);
+    }
+
+    #[Test]
+    public function user_resource_returns_correct_structure_with_no_role_loaded()
+    {
+        $user = User::factory()->create([
+            'status' => \App\Enums\User\UserStatus::Active->value,
+            'role_id' => null, // No role assigned
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/users/{$user->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'id',
+                    'first_name',
+                    'last_name',
+                    'email',
+                    'role', // Should be null when not loaded
+                    'status',
+                    'avatar',
+                    'phone',
+                    'created_at',
+                    'updated_at',
+                ],
+                'message',
+            ]);
+
+        // Verify the actual data structure
+        $data = $response->json('data');
+        $this->assertEquals($user->id, $data['id']);
+        $this->assertEquals($user->first_name, $data['first_name']);
+        $this->assertEquals($user->last_name, $data['last_name']);
+        $this->assertEquals($user->email, $data['email']);
+        $this->assertEquals($user->status->value, $data['status']);
+
+        // Verify role relationship is null when not loaded
+        $this->assertNull($data['role']);
+    }
+
+    #[Test]
+    public function user_resource_handles_null_avatar_correctly()
+    {
+        $user = User::factory()->create([
+            'status' => \App\Enums\User\UserStatus::Active->value,
+            'avatar' => null,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/users/{$user->id}");
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+        $this->assertNull($data['avatar']);
+    }
+
+    #[Test]
+    public function user_resource_handles_present_avatar_correctly()
+    {
+        $user = User::factory()->create([
+            'status' => \App\Enums\User\UserStatus::Active->value,
+            'avatar' => 'avatars/test.jpg',
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/users/{$user->id}");
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+        $this->assertEquals(asset('storage/avatars/test.jpg'), $data['avatar']);
+    }
+
+    #[Test]
+    public function user_list_resource_returns_correct_structure_with_roles()
+    {
+        $admin = User::factory()->create(['status' => \App\Enums\User\UserStatus::Active->value]);
+        $adminRole = Role::bySlug('admin')->first();
+        $admin->update(['role_id' => $adminRole->id]);
+
+        $manager = User::factory()->create(['status' => \App\Enums\User\UserStatus::Active->value]);
+        $managerRole = Role::bySlug('manager')->first();
+        $manager->update(['role_id' => $managerRole->id]);
+
+        $token = $this->authenticateUser($admin);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/users');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'first_name',
+                        'last_name',
+                        'email',
+                        'role' => [
+                            'id',
+                            'slug',
+                            'name',
+                        ],
+                        'status',
+                        'avatar',
+                        'phone',
+                        'created_at',
+                        'updated_at',
+                    ],
+                ],
+                'message',
+            ]);
+
+        // Verify that each user has a role loaded
+        $users = $response->json('data');
+        foreach ($users as $userData) {
+            $this->assertArrayHasKey('role', $userData);
+            $this->assertIsArray($userData['role']);
+            $this->assertArrayHasKey('id', $userData['role']);
+            $this->assertArrayHasKey('slug', $userData['role']);
+            $this->assertArrayHasKey('name', $userData['role']);
+        }
+
+        // Find the admin user and verify their role
+        $adminData = collect($users)->firstWhere('id', $admin->id);
+        $this->assertEquals($adminRole->id, $adminData['role']['id']);
+        $this->assertEquals($adminRole->slug, $adminData['role']['slug']);
+        $this->assertEquals($adminRole->name, $adminData['role']['name']);
+
+        // Find the manager user and verify their role
+        $managerData = collect($users)->firstWhere('id', $manager->id);
+        $this->assertEquals($managerRole->id, $managerData['role']['id']);
+        $this->assertEquals($managerRole->slug, $managerData['role']['slug']);
+        $this->assertEquals($managerRole->name, $managerData['role']['name']);
+    }
+
+    #[Test]
+    public function user_resource_handles_null_phone_correctly()
+    {
+        $user = User::factory()->create([
+            'status' => \App\Enums\User\UserStatus::Active->value,
+            'phone' => null,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/users/{$user->id}");
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+        $this->assertNull($data['phone']);
+    }
+
+    #[Test]
+    public function user_resource_handles_present_phone_correctly()
+    {
+        $user = User::factory()->create([
+            'status' => \App\Enums\User\UserStatus::Active->value,
+            'phone' => '+1-555-123-4567',
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/users/{$user->id}");
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+        $this->assertEquals('+1-555-123-4567', $data['phone']);
+    }
 }

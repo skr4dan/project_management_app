@@ -24,7 +24,7 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $users = $this->userRepository->getActiveUsers();
+            $users = $this->userRepository->getActiveUsers()->load('role');
 
             return response()->json([
                 'success' => true,
@@ -53,6 +53,9 @@ class UserController extends Controller
                     'message' => 'User not found',
                 ], Response::HTTP_NOT_FOUND);
             }
+
+            // Load role relationship for the response
+            $user->load('role');
 
             return response()->json([
                 'success' => true,

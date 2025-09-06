@@ -785,4 +785,253 @@ class TaskApiTest extends TestCase
         $this->assertNull($response->json('pagination.from'));
         $this->assertNull($response->json('pagination.to'));
     }
+
+    #[Test]
+    public function task_resource_returns_correct_structure_with_all_relationships_loaded()
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+        $assignedUser = User::factory()->create();
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'assigned_to' => $assignedUser->id,
+            'created_by' => $user->id,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/tasks/{$task->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'id',
+                    'title',
+                    'description',
+                    'status',
+                    'priority',
+                    'project' => [
+                        'id',
+                        'name',
+                    ],
+                    'assigned_to' => [
+                        'id',
+                        'first_name',
+                        'last_name',
+                        'email',
+                    ],
+                    'created_by' => [
+                        'id',
+                        'first_name',
+                        'last_name',
+                        'email',
+                    ],
+                    'due_date',
+                    'created_at',
+                    'updated_at',
+                ],
+                'message',
+            ]);
+
+        // Verify the actual data structure
+        $data = $response->json('data');
+        $this->assertEquals($task->id, $data['id']);
+        $this->assertEquals($task->title, $data['title']);
+        $this->assertEquals($task->status->value, $data['status']);
+        $this->assertEquals($task->priority->value, $data['priority']);
+
+        // Verify project relationship
+        $this->assertEquals($project->id, $data['project']['id']);
+        $this->assertEquals($project->name, $data['project']['name']);
+
+        // Verify assigned_to relationship
+        $this->assertEquals($assignedUser->id, $data['assigned_to']['id']);
+        $this->assertEquals($assignedUser->first_name, $data['assigned_to']['first_name']);
+        $this->assertEquals($assignedUser->last_name, $data['assigned_to']['last_name']);
+        $this->assertEquals($assignedUser->email, $data['assigned_to']['email']);
+
+        // Verify created_by relationship
+        $this->assertEquals($user->id, $data['created_by']['id']);
+        $this->assertEquals($user->first_name, $data['created_by']['first_name']);
+        $this->assertEquals($user->last_name, $data['created_by']['last_name']);
+        $this->assertEquals($user->email, $data['created_by']['email']);
+    }
+
+    #[Test]
+    public function task_resource_returns_correct_structure_with_no_relationships_loaded()
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'assigned_to' => null,
+            'created_by' => $user->id,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/tasks/{$task->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'id',
+                    'title',
+                    'description',
+                    'status',
+                    'priority',
+                    'project' => [
+                        'id',
+                        'name',
+                    ],
+                    'assigned_to', // Should be null when not assigned
+                    'created_by' => [
+                        'id',
+                        'first_name',
+                        'last_name',
+                        'email',
+                    ],
+                    'due_date',
+                    'created_at',
+                    'updated_at',
+                ],
+                'message',
+            ]);
+
+        // Verify the actual data structure
+        $data = $response->json('data');
+        $this->assertEquals($task->id, $data['id']);
+        $this->assertEquals($task->title, $data['title']);
+        $this->assertEquals($task->status->value, $data['status']);
+        $this->assertEquals($task->priority->value, $data['priority']);
+
+        // Verify relationships are loaded correctly
+        $this->assertEquals($project->id, $data['project']['id']);
+        $this->assertEquals($project->name, $data['project']['name']);
+        $this->assertNull($data['assigned_to']);
+
+        // Verify created_by relationship is still loaded
+        $this->assertEquals($user->id, $data['created_by']['id']);
+        $this->assertEquals($user->first_name, $data['created_by']['first_name']);
+        $this->assertEquals($user->last_name, $data['created_by']['last_name']);
+        $this->assertEquals($user->email, $data['created_by']['email']);
+    }
+
+    #[Test]
+    public function task_resource_handles_null_due_date_correctly()
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->create([
+            'created_by' => $user->id,
+            'due_date' => null,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/tasks/{$task->id}");
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+        $this->assertNull($data['due_date']);
+    }
+
+    #[Test]
+    public function task_resource_handles_present_due_date_correctly()
+    {
+        $user = User::factory()->create();
+        $dueDate = now()->addDays(7)->microsecond(0);
+        $task = Task::factory()->create([
+            'created_by' => $user->id,
+            'due_date' => $dueDate,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/tasks/{$task->id}");
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+        $this->assertEquals($dueDate->toISOString(), $data['due_date']);
+    }
+
+    #[Test]
+    public function task_list_resource_returns_correct_structure_with_relationships()
+    {
+        $user = User::factory()->manager()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+        $assignedUser = User::factory()->create();
+
+        Task::factory()->create([
+            'project_id' => $project->id,
+            'assigned_to' => $assignedUser->id,
+            'created_by' => $user->id,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/tasks');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'description',
+                        'status',
+                        'priority',
+                        'project' => [
+                            'id',
+                            'name',
+                        ],
+                        'assigned_to' => [
+                            'id',
+                            'first_name',
+                            'last_name',
+                            'email',
+                        ],
+                        'created_by' => [
+                            'id',
+                            'first_name',
+                            'last_name',
+                            'email',
+                        ],
+                        'due_date',
+                        'created_at',
+                        'updated_at',
+                    ],
+                ],
+                'pagination',
+                'message',
+            ]);
+
+        // Verify the first task has all relationships loaded
+        $firstTask = $response->json('data.0');
+        $this->assertArrayHasKey('project', $firstTask);
+        $this->assertArrayHasKey('assigned_to', $firstTask);
+        $this->assertArrayHasKey('created_by', $firstTask);
+
+        $this->assertEquals($project->id, $firstTask['project']['id']);
+        $this->assertEquals($project->name, $firstTask['project']['name']);
+
+        $this->assertEquals($assignedUser->id, $firstTask['assigned_to']['id']);
+        $this->assertEquals($assignedUser->first_name, $firstTask['assigned_to']['first_name']);
+        $this->assertEquals($assignedUser->last_name, $firstTask['assigned_to']['last_name']);
+        $this->assertEquals($assignedUser->email, $firstTask['assigned_to']['email']);
+
+        $this->assertEquals($user->id, $firstTask['created_by']['id']);
+        $this->assertEquals($user->first_name, $firstTask['created_by']['first_name']);
+        $this->assertEquals($user->last_name, $firstTask['created_by']['last_name']);
+        $this->assertEquals($user->email, $firstTask['created_by']['email']);
+    }
 }

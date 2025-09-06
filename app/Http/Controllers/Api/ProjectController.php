@@ -30,9 +30,9 @@ class ProjectController extends Controller
             $status = $request->validated('status', null);
 
             if (is_null($status)) {
-                $projects = $this->projectRepository->getActiveProjects();
+                $projects = $this->projectRepository->getActiveProjects()->load(['createdBy', 'tasks']);
             } else {
-                $projects = $this->projectRepository->getByStatus(ProjectStatus::from($status));
+                $projects = $this->projectRepository->getByStatus(ProjectStatus::from($status))->load(['createdBy', 'tasks']);
             }
 
             return response()->json([
@@ -95,6 +95,9 @@ class ProjectController extends Controller
                     'message' => 'Project not found',
                 ], Response::HTTP_NOT_FOUND);
             }
+
+            // Load relationships for the response
+            $project->load(['createdBy', 'tasks']);
 
             return response()->json([
                 'success' => true,

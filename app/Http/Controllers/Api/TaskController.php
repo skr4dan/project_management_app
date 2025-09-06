@@ -121,6 +121,9 @@ class TaskController extends Controller
                 ], Response::HTTP_NOT_FOUND);
             }
 
+            // Load relationships for the response
+            $task->load(['project', 'assignedTo', 'createdBy']);
+
             return response()->json([
                 'success' => true,
                 'data' => new TaskResource($task),

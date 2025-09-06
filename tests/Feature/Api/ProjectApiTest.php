@@ -447,4 +447,195 @@ class ProjectApiTest extends TestCase
                 'message' => 'Project not found',
             ]);
     }
+
+    #[Test]
+    public function project_resource_returns_correct_structure_with_relationships_loaded()
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+
+        // Create some tasks for the project
+        \App\Models\Task::factory()->count(3)->create([
+            'project_id' => $project->id,
+            'created_by' => $user->id,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/projects/{$project->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'id',
+                    'name',
+                    'description',
+                    'status',
+                    'created_by' => [
+                        'id',
+                        'first_name',
+                        'last_name',
+                        'email',
+                    ],
+                    'tasks_count',
+                    'created_at',
+                    'updated_at',
+                ],
+                'message',
+            ]);
+
+        // Verify the actual data structure
+        $data = $response->json('data');
+        $this->assertEquals($project->id, $data['id']);
+        $this->assertEquals($project->name, $data['name']);
+        $this->assertEquals($project->description, $data['description']);
+        $this->assertEquals($project->status->value, $data['status']);
+
+        // Verify created_by relationship
+        $this->assertEquals($user->id, $data['created_by']['id']);
+        $this->assertEquals($user->first_name, $data['created_by']['first_name']);
+        $this->assertEquals($user->last_name, $data['created_by']['last_name']);
+        $this->assertEquals($user->email, $data['created_by']['email']);
+
+        // Verify tasks_count
+        $this->assertEquals(3, $data['tasks_count']);
+    }
+
+    #[Test]
+    public function project_resource_returns_correct_structure_with_no_relationships_loaded()
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $user->id]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/projects/{$project->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'id',
+                    'name',
+                    'description',
+                    'status',
+                    'created_by' => [
+                        'id',
+                        'first_name',
+                        'last_name',
+                        'email',
+                    ],
+                    'tasks_count',
+                    'created_at',
+                    'updated_at',
+                ],
+                'message',
+            ]);
+
+        // Verify the actual data structure
+        $data = $response->json('data');
+        $this->assertEquals($project->id, $data['id']);
+        $this->assertEquals($project->name, $data['name']);
+        $this->assertEquals($project->description, $data['description']);
+        $this->assertEquals($project->status->value, $data['status']);
+
+        // Verify created_by relationship is loaded
+        $this->assertEquals($user->id, $data['created_by']['id']);
+        $this->assertEquals($user->first_name, $data['created_by']['first_name']);
+        $this->assertEquals($user->last_name, $data['created_by']['last_name']);
+        $this->assertEquals($user->email, $data['created_by']['email']);
+
+        // Verify tasks_count is available (but 0 since no tasks loaded)
+        $this->assertEquals(0, $data['tasks_count']);
+    }
+
+    #[Test]
+    public function project_resource_handles_null_description_correctly()
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create([
+            'created_by' => $user->id,
+            'description' => null,
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/projects/{$project->id}");
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+        $this->assertNull($data['description']);
+    }
+
+    #[Test]
+    public function project_resource_handles_present_description_correctly()
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create([
+            'created_by' => $user->id,
+            'description' => 'This is a test project description',
+        ]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson("/api/projects/{$project->id}");
+
+        $response->assertStatus(200);
+
+        $data = $response->json('data');
+        $this->assertEquals('This is a test project description', $data['description']);
+    }
+
+    #[Test]
+    public function project_list_resource_returns_correct_structure_with_creator()
+    {
+        $user = User::factory()->create();
+        $projects = Project::factory()->count(2)->create(['created_by' => $user->id]);
+
+        $token = $this->authenticateUser($user);
+
+        $response = $this->withHeaders($this->getAuthHeader($token))
+            ->getJson('/api/projects');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'description',
+                        'status',
+                        'created_by' => [
+                            'id',
+                            'first_name',
+                            'last_name',
+                            'email',
+                        ],
+                        'tasks_count',
+                        'created_at',
+                        'updated_at',
+                    ],
+                ],
+                'message',
+            ]);
+
+        // Verify the first project has creator loaded
+        $firstProject = $response->json('data.0');
+        $this->assertArrayHasKey('created_by', $firstProject);
+        $this->assertIsArray($firstProject['created_by']);
+        $this->assertEquals($user->id, $firstProject['created_by']['id']);
+        $this->assertEquals($user->first_name, $firstProject['created_by']['first_name']);
+        $this->assertEquals($user->last_name, $firstProject['created_by']['last_name']);
+        $this->assertEquals($user->email, $firstProject['created_by']['email']);
+
+        // Verify tasks_count is included
+        $this->assertArrayHasKey('tasks_count', $firstProject);
+    }
 }
