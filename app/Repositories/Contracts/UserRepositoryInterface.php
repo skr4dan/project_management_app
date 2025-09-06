@@ -28,21 +28,21 @@ interface UserRepositoryInterface
     /**
      * Get users by role
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\User>
      */
     public function getByRole(int $roleId);
 
     /**
      * Get users by status
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\User>
      */
     public function getByStatus(UserStatus $status);
 
     /**
      * Get active users
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\User>
      */
     public function getActiveUsers();
 
@@ -61,7 +61,7 @@ interface UserRepositoryInterface
     /**
      * Search users by name or email
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\User>
      */
     public function search(string $query);
 

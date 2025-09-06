@@ -26,7 +26,7 @@ interface RoleRepositoryInterface
     /**
      * Get active roles only
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role>
      */
     public function getActiveRoles();
 

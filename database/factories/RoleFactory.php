@@ -17,20 +17,21 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         $name = fake()->unique()->words(2, true);
-        $slug = \Illuminate\Support\Str::slug($name);
+        $nameString = is_array($name) ? implode(' ', $name) : $name;
+        $slug = \Illuminate\Support\Str::slug($nameString);
 
         return [
             'slug' => $slug,
-            'name' => ucwords($name),
+            'name' => ucwords($nameString),
             'permissions' => $this->generateRandomPermissions(),
             'is_active' => fake()->boolean(90), // 90% chance of being active
         ];
     }
 
-    /**w
+    /**
      * Generate a random set of permissions for the role.
      *
-     * @return array<string>
+     * @return array<int, string>
      */
     private function generateRandomPermissions(): array
     {

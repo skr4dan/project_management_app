@@ -54,6 +54,7 @@ class ProjectController extends Controller
     public function store(CreateProjectRequest $request): JsonResponse
     {
         try {
+            /** @var \App\Models\User $user */
             $user = $this->authService->user();
 
             $projectData = array_merge($request->validated(), [
@@ -117,6 +118,13 @@ class ProjectController extends Controller
             $user = $this->authService->user();
             $project = $this->projectRepository->findById($id);
 
+            if (! $user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+
             if (! $project) {
                 return response()->json([
                     'success' => false,
@@ -125,7 +133,7 @@ class ProjectController extends Controller
             }
 
             // Check permissions: author or admin
-            if ($project->created_by !== $user->id && $user->role->slug !== 'admin') {
+            if ($project->created_by !== $user->id && $user->role?->slug !== 'admin') {
                 return response()->json([
                     'success' => false,
                     'message' => 'You can only update your own projects',
@@ -181,6 +189,7 @@ class ProjectController extends Controller
     public function destroy(int $id): JsonResponse
     {
         try {
+            /** @var \App\Models\User $user */
             $user = $this->authService->user();
             $project = $this->projectRepository->findById($id);
 
@@ -191,8 +200,10 @@ class ProjectController extends Controller
                 ], Response::HTTP_NOT_FOUND);
             }
 
+            /** @var \App\Models\Role $role */
+            $role = $user->role;
             // Check permissions: author or admin
-            if ($project->created_by !== $user->id && $user->role->slug !== 'admin') {
+            if ($project->created_by !== $user->id && $role->slug !== 'admin') {
                 return response()->json([
                     'success' => false,
                     'message' => 'You can only delete your own projects',

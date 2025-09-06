@@ -39,6 +39,9 @@ class TaskIndexRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string>
+     */
     private function getSortableFields(): array
     {
         return ['due_date', 'created_at'];

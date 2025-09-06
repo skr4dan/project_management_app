@@ -7,11 +7,16 @@ readonly class StatisticsDTO
     public function __construct(
         public int $totalProjects,
         public int $totalTasks,
+        /** @var array<string, int> */
         public array $tasksByStatus,
         public int $overdueTasks,
+        /** @var array<array{id: int, name: string, email: string, task_count: int}> */
         public array $topActiveUsers,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -23,6 +28,9 @@ readonly class StatisticsDTO
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [

@@ -2,13 +2,17 @@
 
 namespace App\Repositories\Criteria\Task;
 
-use App\Repositories\Criteria\CriteriaInterface;
+use App\Repositories\Criteria\Task\Contracts\TaskCriteriaInterface;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Sort Criteria for Task ordering
  */
-class SortCriteria implements CriteriaInterface
+class SortCriteria implements TaskCriteriaInterface
 {
+    /**
+     * @var array<string>
+     */
     private array $allowedSortFields = [
         'due_date', 'created_at',
     ];
@@ -36,7 +40,11 @@ class SortCriteria implements CriteriaInterface
         }
     }
 
-    public function apply($query)
+    /**
+     * @param  Builder<\App\Models\Task>  $query
+     * @return Builder<\App\Models\Task>
+     */
+    public function apply($query): Builder
     {
         return $query->orderBy($this->field, $this->direction);
     }

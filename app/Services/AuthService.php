@@ -125,6 +125,7 @@ class AuthService implements AuthServiceInterface
     {
         /** @var User|null $user */
         $user = JWTAuth::user();
+
         return $user;
     }
 
@@ -133,6 +134,6 @@ class AuthService implements AuthServiceInterface
      */
     public function check(): bool
     {
-        return JWTAuth::check();
+        return (bool) JWTAuth::check();
     }
 }

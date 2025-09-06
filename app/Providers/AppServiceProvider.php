@@ -71,6 +71,8 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Clear statistics cache with specific tags.
+     *
+     * @param  array<string>  $tags
      */
     private function clearStatisticsCache(array $tags): void
     {

@@ -4,15 +4,22 @@ namespace App\Repositories\Criteria\Task;
 
 use App\Enums\Task\TaskPriority;
 use App\Enums\Task\TaskStatus;
-use App\Repositories\Criteria\CriteriaInterface;
+use App\Repositories\Criteria\Task\Contracts\TaskCriteriaInterface;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Task Filter - Builds and applies multiple criteria for task filtering
  */
 class TaskFilter
 {
+    /**
+     * @var array<\App\Repositories\Criteria\Task\Contracts\TaskCriteriaInterface>
+     */
     private array $criteria = [];
 
+    /**
+     * @param  array<string, mixed>  $filters
+     */
     public function __construct(array $filters = [])
     {
         $this->buildCriteria($filters);
@@ -21,7 +28,7 @@ class TaskFilter
     /**
      * Add a criteria to the filter
      */
-    public function addCriteria(CriteriaInterface $criteria): self
+    public function addCriteria(TaskCriteriaInterface $criteria): self
     {
         $this->criteria[] = $criteria;
 
@@ -30,6 +37,9 @@ class TaskFilter
 
     /**
      * Apply all criteria to the query
+     *
+     * @param  Builder<\App\Models\Task>  $query
+     * @return Builder<\App\Models\Task>
      */
     public function apply($query)
     {
@@ -42,6 +52,8 @@ class TaskFilter
 
     /**
      * Build criteria from filter array
+     *
+     * @param  array<string, mixed>  $filters
      */
     private function buildCriteria(array $filters): void
     {
@@ -77,6 +89,8 @@ class TaskFilter
 
     /**
      * Get all criteria
+     *
+     * @return array<\App\Repositories\Criteria\Task\Contracts\TaskCriteriaInterface>
      */
     public function getCriteria(): array
     {

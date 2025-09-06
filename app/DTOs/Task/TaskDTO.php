@@ -249,7 +249,7 @@ readonly class TaskDTO
         $now = new \DateTime;
         $interval = $this->created_at->diff($now);
 
-        return $interval->days;
+        return $interval->days ?: 0;
     }
 
     /**

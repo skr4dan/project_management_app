@@ -73,6 +73,7 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, int $id): JsonResponse
     {
         try {
+            /** @var \App\Models\User $authenticatedUser */
             $authenticatedUser = $this->authService->user();
 
             $targetUser = $this->userRepository->findById($id);
@@ -85,7 +86,9 @@ class UserController extends Controller
             }
 
             // Allow admin to update any user, or users to update their own profile
-            if ($authenticatedUser->id !== $id && $authenticatedUser->role->slug !== 'admin') {
+            /** @var \App\Models\Role $role */
+            $role = $authenticatedUser->role;
+            if ($authenticatedUser->id !== $id && $role->slug !== 'admin') {
                 return response()->json([
                     'success' => false,
                     'message' => 'You can only update your own profile',

@@ -22,49 +22,49 @@ interface TaskRepositoryInterface
     /**
      * Get tasks by project
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task>
      */
     public function getByProject(int $projectId);
 
     /**
      * Get tasks by assignee
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task>
      */
     public function getByAssignee(int $userId);
 
     /**
      * Get tasks by creator
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task>
      */
     public function getByCreator(int $userId);
 
     /**
      * Get tasks by status
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task>
      */
     public function getByStatus(TaskStatus $status);
 
     /**
      * Get tasks by priority
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task>
      */
     public function getByPriority(TaskPriority $priority);
 
     /**
      * Get overdue tasks
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task>
      */
     public function getOverdueTasks();
 
     /**
      * Get tasks due soon (within next N days)
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task>
      */
     public function getTasksDueSoon(int $days = 7);
 
@@ -117,7 +117,7 @@ interface TaskRepositoryInterface
     /**
      * Filter tasks using criteria
      *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator<int, \App\Models\Task>
      */
     public function filter(\App\Repositories\Criteria\Task\TaskFilter $filter, \App\DTOs\PaginationDTO $pagination);
 }

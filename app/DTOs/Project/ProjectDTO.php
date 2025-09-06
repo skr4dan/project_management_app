@@ -197,7 +197,7 @@ readonly class ProjectDTO
         $now = new \DateTime;
         $interval = $this->created_at->diff($now);
 
-        return $interval->days;
+        return $interval->days ?: 0;
     }
 
     /**

@@ -2,18 +2,23 @@
 
 namespace App\Repositories\Criteria\Task;
 
-use App\Repositories\Criteria\CriteriaInterface;
+use App\Repositories\Criteria\Task\Contracts\TaskCriteriaInterface;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * User Criteria for Task filtering
  */
-class UserCriteria implements CriteriaInterface
+class UserCriteria implements TaskCriteriaInterface
 {
     public function __construct(
         private int $userId
     ) {}
 
-    public function apply($query)
+    /**
+     * @param  Builder<\App\Models\Task>  $query
+     * @return Builder<\App\Models\Task>
+     */
+    public function apply($query): Builder
     {
         return $query->where(function ($q) {
             $q->where('created_by', $this->userId)

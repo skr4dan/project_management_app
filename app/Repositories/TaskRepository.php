@@ -214,6 +214,8 @@ class TaskRepository implements TaskRepositoryInterface
 
     /**
      * Filter tasks using criteria
+     *
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator<int, \App\Models\Task>
      */
     public function filter(
         \App\Repositories\Criteria\Task\TaskFilter $filter,

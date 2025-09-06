@@ -21,28 +21,28 @@ interface ProjectRepositoryInterface
     /**
      * Get projects by owner
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project>
      */
     public function getByOwner(int $userId);
 
     /**
      * Get projects by status
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project>
      */
     public function getByStatus(ProjectStatus $status);
 
     /**
      * Get active projects
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project>
      */
     public function getActiveProjects();
 
     /**
      * Get completed projects
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project>
      */
     public function getCompletedProjects();
 
@@ -74,7 +74,7 @@ interface ProjectRepositoryInterface
      * Get projects with tasks statistics
      *
      * @param  int|null  $userId  Optional user filter
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project>
      */
     public function getWithStatistics(?int $userId = null);
 
@@ -87,7 +87,7 @@ interface ProjectRepositoryInterface
      * Search projects by name or description
      *
      * @param  int|null  $userId  Optional user filter
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project>
      */
     public function search(string $query, ?int $userId = null);
 

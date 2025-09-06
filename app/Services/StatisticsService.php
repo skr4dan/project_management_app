@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Services\Contracts\StatisticsServiceInterface;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Support\Facades\DB;
 
 class StatisticsService implements StatisticsServiceInterface
 {
@@ -38,7 +39,7 @@ class StatisticsService implements StatisticsServiceInterface
     /**
      * Load all statistics data concurrently for better performance.
      *
-     * @return array{int, int, array, int, array}
+     * @return array{int, int, array<string, int>, int, array<array{id: int, name: string, email: string, task_count: int}>}
      */
     private function loadStatisticsData(): array
     {
@@ -77,16 +78,20 @@ class StatisticsService implements StatisticsServiceInterface
     private function getTasksByStatus(): array
     {
         return $this->cache->remember('stats_tasks_by_status', now()->addMinutes(5), function () {
-            return Task::query()
-                ->selectRaw('status, COUNT(*) as count')
-                ->groupBy('status')
-                ->get()
-                ->mapWithKeys(function ($item) {
-                    /** @phpstan-ignore-next-line */
-                    return [$item->status->value => $item->count];
-                })
-                ->sortKeys() // Sort by status for consistent output
-                ->toArray();
+            $results = DB::select('
+                SELECT status, COUNT(*) as count
+                FROM tasks
+                GROUP BY status
+            ');
+
+            $mapped = [];
+            foreach ($results as $result) {
+                $mapped[$result->status] = (int) $result->count;
+            }
+
+            ksort($mapped);
+
+            return $mapped;
         });
     }
 

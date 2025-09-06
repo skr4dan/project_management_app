@@ -59,7 +59,7 @@ class AuthController extends Controller
 
             // Handle avatar upload
             if ($request->hasFile('avatar')) {
-                $avatarPath = $request->file('avatar')->store('avatars', 'public');
+                $avatarPath = $request->file('avatar')->store('avatars', 'public') ?: null;
             }
 
             $registerDTO = RegisterDTO::fromArray($validatedData);

@@ -15,9 +15,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminRoleId = \App\Models\Role::where('slug', 'admin')->first()->id;
-        $managerRoleId = \App\Models\Role::where('slug', 'manager')->first()->id;
-        $userRoleId = \App\Models\Role::where('slug', 'user')->first()->id;
+        $adminRoleId = \App\Models\Role::where('slug', 'admin')->firstOrFail()->id;
+        $managerRoleId = \App\Models\Role::where('slug', 'manager')->firstOrFail()->id;
+        $userRoleId = \App\Models\Role::where('slug', 'user')->firstOrFail()->id;
 
         // Roles are now created by migration, create test users with different roles
         User::factory()->state([

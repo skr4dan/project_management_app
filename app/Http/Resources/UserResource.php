@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,11 +21,14 @@ class UserResource extends JsonResource
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
             'email' => $this->email,
-            'role' => [
-                'id' => $this->role->id,
-                'slug' => $this->role->slug,
-                'name' => $this->role->name,
-            ],
+            'role' => $this->whenLoaded(
+                'role',
+                fn (Role $role) => [
+                    'id' => $role->id,
+                    'slug' => $role->slug,
+                    'name' => $role->name,
+                ]
+            ),
             'status' => $this->status->value,
             'avatar' => $this->avatar ? asset('storage/'.$this->avatar) : null,
             'phone' => $this->phone,

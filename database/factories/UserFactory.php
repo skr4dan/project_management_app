@@ -40,7 +40,7 @@ class UserFactory extends Factory
     private function withRole(string $role): callable
     {
         return fn (array $attributes) => [
-            'role_id' => Role::bySlug($role)->first()->id,
+            'role_id' => Role::bySlug($role)->first()?->id,
         ];
     }
 

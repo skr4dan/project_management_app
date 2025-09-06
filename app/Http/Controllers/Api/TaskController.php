@@ -11,6 +11,7 @@ use App\Http\Requests\Api\CreateTaskRequest;
 use App\Http\Requests\Api\TaskIndexRequest;
 use App\Http\Requests\Api\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
+use App\Models\User;
 use App\Repositories\Contracts\TaskRepositoryInterface;
 use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Http\JsonResponse;
@@ -29,12 +30,15 @@ class TaskController extends Controller
     public function index(TaskIndexRequest $request): JsonResponse
     {
         try {
+            /** @var \App\Models\User $user */
             $user = $this->authService->user();
             $filters = $request->getFilters();
             $filter = new \App\Repositories\Criteria\Task\TaskFilter($filters);
             $pagination = PaginationDTO::fromRequest($request->getPaginationData());
 
-            if ($user->role->slug !== 'admin') {
+            /** @var \App\Models\Role $role */
+            $role = $user->role;
+            if ($role->slug !== 'admin') {
                 // Add user filter criteria, so user can only see tasks assigned to them or created by them
                 $filter->addCriteria(new \App\Repositories\Criteria\Task\UserCriteria($user->id));
             }
@@ -69,6 +73,13 @@ class TaskController extends Controller
     {
         try {
             $user = $this->authService->user();
+
+            if (! $user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
 
             $taskData = array_merge($request->validated(), [
                 'created_by' => $user->id,
@@ -129,6 +140,7 @@ class TaskController extends Controller
     public function update(UpdateTaskRequest $request, int $id): JsonResponse
     {
         try {
+            /** @var \App\Models\User $user */
             $user = $this->authService->user();
             $task = $this->taskRepository->findById($id);
 
@@ -139,10 +151,11 @@ class TaskController extends Controller
                 ], Response::HTTP_NOT_FOUND);
             }
 
-            // Check permissions: assignee, creator (only if unassigned), or admin can update
+            /** @var \App\Models\Role $role */
+            $role = $user->role;
             $canUpdate = $task->assigned_to === $user->id ||
                         ($task->created_by === $user->id && $task->assigned_to === null) ||
-                        $user->role->slug === 'admin';
+                        $role->slug === 'admin';
 
             if (! $canUpdate) {
                 return response()->json([
@@ -207,6 +220,13 @@ class TaskController extends Controller
             $user = $this->authService->user();
             $task = $this->taskRepository->findById($id);
 
+            if (! $user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+
             if (! $task) {
                 return response()->json([
                     'success' => false,
@@ -215,7 +235,9 @@ class TaskController extends Controller
             }
 
             // Check permissions: author or admin
-            if ($task->created_by !== $user->id && $user->role->slug !== 'admin') {
+            /** @var \App\Models\Role $role */
+            $role = $user->role;
+            if ($task->created_by !== $user->id && $role->slug !== 'admin') {
                 return response()->json([
                     'success' => false,
                     'message' => 'You can only delete your own tasks',
