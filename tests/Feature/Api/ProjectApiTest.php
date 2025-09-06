@@ -452,7 +452,10 @@ class ProjectApiTest extends TestCase
     public function project_resource_returns_correct_structure_with_relationships_loaded()
     {
         $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $project = Project::factory()->create([
+            'created_by' => $user->id,
+            'status' => ProjectStatus::Active,
+        ]);
 
         // Create some tasks for the project
         \App\Models\Task::factory()->count(3)->create([
@@ -596,7 +599,10 @@ class ProjectApiTest extends TestCase
     public function project_list_resource_returns_correct_structure_with_creator()
     {
         $user = User::factory()->create();
-        $projects = Project::factory()->count(2)->create(['created_by' => $user->id]);
+        $projects = Project::factory()->count(2)->create([
+            'created_by' => $user->id,
+            'status' => ProjectStatus::Active,
+        ]);
 
         $token = $this->authenticateUser($user);
 
