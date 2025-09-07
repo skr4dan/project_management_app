@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\Task\TaskPriority;
 use App\Enums\Task\TaskStatus;
+use App\Observers\TaskObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @method static \Database\Factories\TaskFactory factory($count = null, $state = [])
  */
+#[ObservedBy(TaskObserver::class)]
 class Task extends Model
 {
     /** @use HasFactory<\Database\Factories\TaskFactory> */

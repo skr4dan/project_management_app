@@ -46,7 +46,7 @@ class UserRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_user_by_id()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
 
         $foundUser = $this->userRepository->findById($user->id);
 
@@ -65,7 +65,7 @@ class UserRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_users_by_role()
     {
-        $role = \App\Models\Role::factory()->create();
+        $role = \App\Models\Role::bySlug('user')->first();
         User::factory()->count(2)->create(['role_id' => $role->id]);
         User::factory()->count(1)->create(); // Different role
 
@@ -111,7 +111,7 @@ class UserRepositoryTest extends TestCase
     #[Test]
     public function it_can_create_user_from_dto()
     {
-        $role = \App\Models\Role::factory()->create();
+        $role = \App\Models\Role::bySlug('user')->first();
         $plainPassword = 'password123';
 
         $userDTO = new \App\DTOs\User\UserDTO(
@@ -240,7 +240,7 @@ class UserRepositoryTest extends TestCase
     public function it_can_assign_role_to_user()
     {
         $user = User::factory()->create(['role_id' => null]);
-        $role = \App\Models\Role::factory()->create();
+        $role = \App\Models\Role::bySlug('user')->first();
 
         $assigned = $this->userRepository->assignRole($user->id, $role->id);
 
@@ -259,7 +259,7 @@ class UserRepositoryTest extends TestCase
     #[Test]
     public function it_can_remove_role_from_user()
     {
-        $role = \App\Models\Role::factory()->create();
+        $role = \App\Models\Role::bySlug('user')->first();
         $user = User::factory()->create(['role_id' => $role->id]);
 
         $removed = $this->userRepository->removeRole($user->id);

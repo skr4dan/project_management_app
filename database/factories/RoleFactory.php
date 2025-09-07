@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -10,46 +11,39 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class RoleFactory extends Factory
 {
     /**
+     * The name of the factory's corresponding model.
+     *
+     * @var class-string<\App\Models\Role>
+     */
+    protected $model = Role::class;
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
-        $name = fake()->unique()->words(2, true);
-        $nameString = is_array($name) ? implode(' ', $name) : $name;
-        $slug = \Illuminate\Support\Str::slug($nameString);
-
         return [
-            'slug' => $slug,
-            'name' => ucwords($nameString),
-            'permissions' => $this->generateRandomPermissions(),
+            'slug' => fake()->unique()->slug(),
+            'name' => fake()->words(2, true),
+            'permissions' => fake()->randomElements([
+                'users.view', 'users.create', 'users.edit', 'users.delete',
+                'projects.view', 'projects.create', 'projects.edit', 'projects.delete',
+                'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete',
+            ], fake()->numberBetween(1, 5)),
             'is_active' => fake()->boolean(90), // 90% chance of being active
         ];
     }
 
     /**
-     * Generate a random set of permissions for the role.
-     *
-     * @return array<int, string>
+     * Indicate that the role is inactive.
      */
-    private function generateRandomPermissions(): array
+    public function inactive(): static
     {
-        $allPermissions = [
-            'users.view', 'users.create', 'users.edit', 'users.delete',
-            'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
-            'projects.view', 'projects.create', 'projects.edit', 'projects.delete',
-            'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete',
-            'tasks.assign', 'reports.view', 'profile.edit',
-        ];
-
-        // Randomly select 3-8 permissions
-        $selectedPermissions = fake()->randomElements(
-            $allPermissions,
-            fake()->numberBetween(3, 8)
-        );
-
-        return array_unique($selectedPermissions);
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
     }
 
     /**
@@ -57,22 +51,17 @@ class RoleFactory extends Factory
      */
     public function admin(): static
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'slug' => 'admin',
-                'name' => 'Administrator',
-                'permissions' => [
-                    'users.view', 'users.create', 'users.edit', 'users.delete',
-                    'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
-                    'projects.view', 'projects.create', 'projects.edit', 'projects.delete',
-                    'projects.manage_all',
-                    'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete',
-                    'tasks.assign', 'tasks.manage_all',
-                    'system.admin',
-                ],
-                'is_active' => true,
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'slug' => 'admin',
+            'name' => 'Administrator',
+            'permissions' => [
+                'users.view', 'users.create', 'users.edit', 'users.delete',
+                'projects.view', 'projects.create', 'projects.edit', 'projects.delete',
+                'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete',
+                'system.admin',
+            ],
+            'is_active' => true,
+        ]);
     }
 
     /**
@@ -80,19 +69,16 @@ class RoleFactory extends Factory
      */
     public function manager(): static
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'slug' => 'manager',
-                'name' => 'Manager',
-                'permissions' => [
-                    'projects.view', 'projects.create', 'projects.edit_own',
-                    'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete',
-                    'tasks.assign', 'tasks.manage_own_projects',
-                    'users.view', 'reports.view',
-                ],
-                'is_active' => true,
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'slug' => 'manager',
+            'name' => 'Manager',
+            'permissions' => [
+                'projects.view', 'projects.create', 'projects.edit',
+                'tasks.view', 'tasks.create', 'tasks.edit', 'tasks.delete',
+                'users.view',
+            ],
+            'is_active' => true,
+        ]);
     }
 
     /**
@@ -100,28 +86,15 @@ class RoleFactory extends Factory
      */
     public function user(): static
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'slug' => 'user',
-                'name' => 'User',
-                'permissions' => [
-                    'tasks.view_assigned', 'tasks.update_status',
-                    'projects.view_own', 'profile.edit',
-                ],
-                'is_active' => true,
-            ];
-        });
-    }
-
-    /**
-     * Create an inactive role.
-     */
-    public function inactive(): static
-    {
-        return $this->state(function (array $attributes) {
-            return [
-                'is_active' => false,
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'slug' => 'user',
+            'name' => 'User',
+            'permissions' => [
+                'tasks.view_assigned', 'tasks.update_status',
+                'projects.view_own',
+                'profile.edit',
+            ],
+            'is_active' => true,
+        ]);
     }
 }

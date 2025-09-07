@@ -4,6 +4,15 @@ parameters:
         - app
         - database
     tmpDir: .phpstan/cache
+    reportUnmatchedIgnoredErrors: false
+
+    ignoreErrors:
+        - '#Property .*Notification::\$queue has no type specified\.#'
+        - '#Property .*Notification::\$tries has no type specified\.#'
+        - '#Property .*Notification::\$maxExceptions has no type specified\.#'
+        - '#Property .*Notification::\$backoff has no type specified\.#'
+        - '#Property .*Notification::\$timeout has no type specified\.#'
+        - '#Property .*Notification::\$failOnTimeout has no type specified\.#'
 
 includes:
     - vendor/larastan/larastan/extension.neon

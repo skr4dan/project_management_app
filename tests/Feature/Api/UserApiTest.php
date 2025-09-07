@@ -77,7 +77,7 @@ class UserApiTest extends TestCase
     #[Test]
     public function regular_user_cannot_list_users()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $userRole = Role::bySlug('user')->first();
         $user->update(['role_id' => $userRole->id]);
 
@@ -108,7 +108,7 @@ class UserApiTest extends TestCase
     #[Test]
     public function authenticated_user_can_view_own_profile()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
 
         $token = $this->authenticateUser($user);
 
@@ -131,8 +131,8 @@ class UserApiTest extends TestCase
     #[Test]
     public function authenticated_user_can_view_other_user_profile()
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
+        $user1 = User::factory()->regularUser()->create();
+        $user2 = User::factory()->regularUser()->create();
 
         $token = $this->authenticateUser($user1);
 
@@ -155,7 +155,7 @@ class UserApiTest extends TestCase
     #[Test]
     public function user_cannot_view_nonexistent_user()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -254,7 +254,7 @@ class UserApiTest extends TestCase
     #[Test]
     public function admin_can_update_any_user_profile()
     {
-        $admin = User::factory()->create();
+        $admin = User::factory()->regularUser()->create();
         $adminRole = Role::bySlug('admin')->first();
         $admin->update(['role_id' => $adminRole->id]);
 
@@ -284,8 +284,8 @@ class UserApiTest extends TestCase
     #[Test]
     public function user_cannot_update_other_user_profile()
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
+        $user1 = User::factory()->regularUser()->create();
+        $user2 = User::factory()->regularUser()->create();
 
         $token = $this->authenticateUser($user1);
 
@@ -306,7 +306,7 @@ class UserApiTest extends TestCase
     #[Test]
     public function user_update_validation_fails_with_invalid_data()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $invalidData = [
@@ -343,7 +343,7 @@ class UserApiTest extends TestCase
     #[Test]
     public function unauthenticated_user_cannot_update_profile()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $updateData = ['first_name' => 'Updated'];
 
         $response = $this->putJson("/api/users/{$user->id}", $updateData);
@@ -358,7 +358,7 @@ class UserApiTest extends TestCase
     #[Test]
     public function user_cannot_update_nonexistent_user()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $updateData = ['first_name' => 'Updated'];

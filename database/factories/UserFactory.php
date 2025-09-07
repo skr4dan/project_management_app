@@ -29,7 +29,7 @@ class UserFactory extends Factory
             'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
-            'role_id' => \App\Models\Role::factory(),
+            'role_id' => null,
             'status' => fake()->randomElement(['active', 'inactive', 'blocked']),
             'avatar' => fake()->optional(0.3)->imageUrl(),
             'phone' => fake()->optional(0.7)->phoneNumber(),
@@ -40,7 +40,7 @@ class UserFactory extends Factory
     private function withRole(string $role): callable
     {
         return fn (array $attributes) => [
-            'role_id' => Role::bySlug($role)->first()?->id,
+            'role_id' => Role::bySlug($role)->firstOrFail()->id,
         ];
     }
 
@@ -56,7 +56,7 @@ class UserFactory extends Factory
 
     public function regularUser(): static
     {
-        return $this->state($this->withRole('regular'));
+        return $this->state($this->withRole('user'));
     }
 
     /**

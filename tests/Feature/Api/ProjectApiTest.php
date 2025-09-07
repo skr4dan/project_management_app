@@ -17,8 +17,8 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function authenticated_user_can_list_projects()
     {
-        $user = User::factory()->create();
-        $projects = Project::factory()->count(3)->create([
+        $user = User::factory()->regularUser()->create();
+        $projects = Project::factory()->count(3)->createQuietly([
             'created_by' => $user->id,
             'status' => ProjectStatus::Active->value,
         ]);
@@ -55,14 +55,14 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function user_can_filter_projects_by_status()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
 
-        Project::factory()->create([
+        Project::factory()->createQuietly([
             'created_by' => $user->id,
             'status' => ProjectStatus::Active,
         ]);
 
-        Project::factory()->create([
+        Project::factory()->createQuietly([
             'created_by' => $user->id,
             'status' => ProjectStatus::Completed,
         ]);
@@ -219,8 +219,8 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function authenticated_user_can_view_project_details()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         $token = $this->authenticateUser($user);
 
@@ -243,7 +243,7 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function user_cannot_view_nonexistent_project()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -259,8 +259,8 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function project_creator_can_update_project()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly([
             'created_by' => $user->id,
             'name' => 'Original Name',
         ]);
@@ -299,8 +299,8 @@ class ProjectApiTest extends TestCase
         $adminRole = Role::bySlug('admin')->first();
         $admin = User::factory()->create(['role_id' => $adminRole->id]);
 
-        $otherUser = User::factory()->create();
-        $project = Project::factory()->create([
+        $otherUser = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly([
             'created_by' => $otherUser->id,
             'name' => 'Original Name',
         ]);
@@ -327,10 +327,10 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function user_cannot_update_other_user_project()
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
+        $user1 = User::factory()->regularUser()->create();
+        $user2 = User::factory()->regularUser()->create();
 
-        $project = Project::factory()->create([
+        $project = Project::factory()->createQuietly([
             'created_by' => $user2->id,
         ]);
 
@@ -353,8 +353,8 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function project_update_validation_fails_with_invalid_status()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         $token = $this->authenticateUser($user);
 
@@ -372,8 +372,8 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function project_creator_can_delete_project()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         $token = $this->authenticateUser($user);
 
@@ -397,8 +397,8 @@ class ProjectApiTest extends TestCase
         $adminRole = Role::bySlug('admin')->first();
         $admin = User::factory()->create(['role_id' => $adminRole->id]);
 
-        $otherUser = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $otherUser->id]);
+        $otherUser = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $otherUser->id]);
 
         $token = $this->authenticateUser($admin);
 
@@ -415,10 +415,9 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function user_cannot_delete_other_user_project()
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-
-        $project = Project::factory()->create(['created_by' => $user2->id]);
+        $user1 = User::factory()->regularUser()->create();
+        $user2 = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user2->id]);
 
         $token = $this->authenticateUser($user1);
 
@@ -435,7 +434,7 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function user_cannot_delete_nonexistent_project()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -451,14 +450,14 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function project_resource_returns_correct_structure_with_relationships_loaded()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly([
             'created_by' => $user->id,
             'status' => ProjectStatus::Active,
         ]);
 
         // Create some tasks for the project
-        \App\Models\Task::factory()->count(3)->create([
+        \App\Models\Task::factory()->count(3)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
         ]);
@@ -509,8 +508,8 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function project_resource_returns_correct_structure_with_no_relationships_loaded()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         $token = $this->authenticateUser($user);
 
@@ -558,8 +557,8 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function project_resource_handles_null_description_correctly()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly([
             'created_by' => $user->id,
             'description' => null,
         ]);
@@ -578,8 +577,8 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function project_resource_handles_present_description_correctly()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly([
             'created_by' => $user->id,
             'description' => 'This is a test project description',
         ]);
@@ -598,8 +597,8 @@ class ProjectApiTest extends TestCase
     #[Test]
     public function project_list_resource_returns_correct_structure_with_creator()
     {
-        $user = User::factory()->create();
-        $projects = Project::factory()->count(2)->create([
+        $user = User::factory()->regularUser()->create();
+        $projects = Project::factory()->count(2)->createQuietly([
             'created_by' => $user->id,
             'status' => ProjectStatus::Active,
         ]);

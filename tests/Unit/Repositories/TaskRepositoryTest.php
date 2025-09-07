@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Repositories\TaskRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 use Tests\TestCase;
@@ -29,7 +30,7 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_task_by_id()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->createQuietly();
 
         $foundTask = $this->taskRepository->findById($task->id);
 
@@ -48,9 +49,9 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_tasks_by_project()
     {
-        $project = Project::factory()->create();
-        Task::factory()->count(3)->create(['project_id' => $project->id]);
-        Task::factory()->count(2)->create(); // Different project
+        $project = Project::factory()->createQuietly();
+        Task::factory()->count(3)->createQuietly(['project_id' => $project->id]);
+        Task::factory()->count(2)->createQuietly(); // Different project
 
         $tasks = $this->taskRepository->getByProject($project->id);
 
@@ -64,9 +65,9 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_tasks_by_assignee()
     {
-        $user = User::factory()->create();
-        Task::factory()->count(2)->create(['assigned_to' => $user->id]);
-        Task::factory()->count(1)->create(); // Different assignee
+        $user = User::factory()->regularUser()->create();
+        Task::factory()->count(2)->createQuietly(['assigned_to' => $user->id]);
+        Task::factory()->count(1)->createQuietly(); // Different assignee
 
         $tasks = $this->taskRepository->getByAssignee($user->id);
 
@@ -80,9 +81,9 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_tasks_by_creator()
     {
-        $user = User::factory()->create();
-        Task::factory()->count(3)->create(['created_by' => $user->id]);
-        Task::factory()->count(1)->create(); // Different creator
+        $user = User::factory()->regularUser()->create();
+        Task::factory()->count(3)->createQuietly(['created_by' => $user->id]);
+        Task::factory()->count(1)->createQuietly(); // Different creator
 
         $tasks = $this->taskRepository->getByCreator($user->id);
 
@@ -96,8 +97,8 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_tasks_by_status()
     {
-        Task::factory()->count(2)->create(['status' => TaskStatus::Completed->value]);
-        Task::factory()->count(3)->create(['status' => TaskStatus::Pending->value]);
+        Task::factory()->count(2)->createQuietly(['status' => TaskStatus::Completed->value]);
+        Task::factory()->count(3)->createQuietly(['status' => TaskStatus::Pending->value]);
 
         $tasks = $this->taskRepository->getByStatus(TaskStatus::Completed);
 
@@ -111,8 +112,8 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_tasks_by_priority()
     {
-        Task::factory()->count(2)->create(['priority' => TaskPriority::High->value]);
-        Task::factory()->count(1)->create(['priority' => TaskPriority::Medium->value]);
+        Task::factory()->count(2)->createQuietly(['priority' => TaskPriority::High->value]);
+        Task::factory()->count(1)->createQuietly(['priority' => TaskPriority::Medium->value]);
 
         $tasks = $this->taskRepository->getByPriority(TaskPriority::High);
 
@@ -126,15 +127,15 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_overdue_tasks()
     {
-        Task::factory()->count(2)->create([
+        Task::factory()->count(2)->createQuietly([
             'due_date' => now()->subDays(1),
             'status' => TaskStatus::Pending->value,
         ]);
-        Task::factory()->count(1)->create([
+        Task::factory()->count(1)->createQuietly([
             'due_date' => now()->addDays(1),
             'status' => TaskStatus::Pending->value,
         ]);
-        Task::factory()->count(1)->create([
+        Task::factory()->count(1)->createQuietly([
             'due_date' => now()->subDays(1),
             'status' => TaskStatus::Completed->value, // Should not be included
         ]);
@@ -148,11 +149,11 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_tasks_due_soon()
     {
-        Task::factory()->count(2)->create([
+        Task::factory()->count(2)->createQuietly([
             'due_date' => now()->addDays(3),
             'status' => TaskStatus::Pending->value,
         ]);
-        Task::factory()->count(1)->create([
+        Task::factory()->count(1)->createQuietly([
             'due_date' => now()->addDays(10),
             'status' => TaskStatus::Pending->value,
         ]);
@@ -166,9 +167,9 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_create_task_from_dto()
     {
-        $project = Project::factory()->create();
-        $assignee = User::factory()->create();
-        $creator = User::factory()->create();
+        $project = Project::factory()->createQuietly();
+        $assignee = User::factory()->regularUser()->create();
+        $creator = User::factory()->regularUser()->create();
 
         $taskDTO = new \App\DTOs\Task\TaskDTO(
             id: null,
@@ -184,6 +185,7 @@ class TaskRepositoryTest extends TestCase
             updated_at: null
         );
 
+        Event::fake();
         $task = $this->taskRepository->createFromDTO($taskDTO);
 
         $this->assertInstanceOf(Task::class, $task);
@@ -199,7 +201,7 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_update_task_from_dto()
     {
-        $task = Task::factory()->create([
+        $task = Task::factory()->createQuietly([
             'title' => 'Original Title',
             'description' => 'Original Description',
             'status' => TaskStatus::Pending->value,
@@ -220,6 +222,7 @@ class TaskRepositoryTest extends TestCase
             updated_at: $task->updated_at
         );
 
+        Event::fake();
         $updated = $this->taskRepository->updateFromDTO($task->id, $taskDTO);
 
         $this->assertTrue($updated);
@@ -254,7 +257,8 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_update_task_status()
     {
-        $task = Task::factory()->create(['status' => TaskStatus::Pending->value]);
+        Event::fake();
+        $task = Task::factory()->createQuietly(['status' => TaskStatus::Pending->value]);
 
         $updated = $this->taskRepository->updateStatus($task->id, TaskStatus::Completed);
 
@@ -273,7 +277,7 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_update_task_priority()
     {
-        $task = Task::factory()->create(['priority' => TaskPriority::Low->value]);
+        $task = Task::factory()->createQuietly(['priority' => TaskPriority::Low->value]);
 
         $updated = $this->taskRepository->updatePriority($task->id, TaskPriority::High);
 
@@ -292,8 +296,9 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_assign_task_to_user()
     {
-        $task = Task::factory()->create(['assigned_to' => null]);
-        $user = User::factory()->create();
+        Event::fake();
+        $task = Task::factory()->createQuietly(['assigned_to' => null]);
+        $user = User::factory()->regularUser()->create();
 
         $assigned = $this->taskRepository->assignToUser($task->id, $user->id);
 
@@ -312,8 +317,8 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_unassign_task_from_user()
     {
-        $task = Task::factory()->create();
-
+        Event::fake();
+        $task = Task::factory()->createQuietly();
         $unassigned = $this->taskRepository->unassignFromUser($task->id);
 
         $this->assertTrue($unassigned);
@@ -331,12 +336,12 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_project_statistics()
     {
-        $project = Project::factory()->create();
-        Task::factory()->count(2)->create([
+        $project = Project::factory()->createQuietly();
+        Task::factory()->count(2)->createQuietly([
             'project_id' => $project->id,
             'status' => TaskStatus::Completed->value,
         ]);
-        Task::factory()->count(3)->create([
+        Task::factory()->count(3)->createQuietly([
             'project_id' => $project->id,
             'status' => TaskStatus::Pending->value,
         ]);
@@ -354,12 +359,12 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_user_statistics()
     {
-        $user = User::factory()->create();
-        Task::factory()->count(2)->create([
+        $user = User::factory()->regularUser()->create();
+        Task::factory()->count(2)->createQuietly([
             'assigned_to' => $user->id,
             'status' => TaskStatus::Completed->value,
         ]);
-        Task::factory()->count(1)->create([
+        Task::factory()->count(1)->createQuietly([
             'assigned_to' => $user->id,
             'status' => TaskStatus::InProgress->value,
         ]);
@@ -376,8 +381,8 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_filter_tasks_by_status()
     {
-        Task::factory()->count(2)->create(['status' => TaskStatus::Completed->value]);
-        Task::factory()->count(3)->create(['status' => TaskStatus::Pending->value]);
+        Task::factory()->count(2)->createQuietly(['status' => TaskStatus::Completed->value]);
+        Task::factory()->count(3)->createQuietly(['status' => TaskStatus::Pending->value]);
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter(['status' => TaskStatus::Completed->value]);
         $paginator = $this->taskRepository->filter($filter);
@@ -394,8 +399,8 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_filter_tasks_by_priority()
     {
-        Task::factory()->count(2)->create(['priority' => TaskPriority::High->value]);
-        Task::factory()->count(1)->create(['priority' => TaskPriority::Medium->value]);
+        Task::factory()->count(2)->createQuietly(['priority' => TaskPriority::High->value]);
+        Task::factory()->count(1)->createQuietly(['priority' => TaskPriority::Medium->value]);
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter(['priority' => TaskPriority::High->value]);
         $paginator = $this->taskRepository->filter($filter);
@@ -412,10 +417,10 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_filter_tasks_by_project()
     {
-        $project1 = Project::factory()->create();
-        $project2 = Project::factory()->create();
-        Task::factory()->count(3)->create(['project_id' => $project1->id]);
-        Task::factory()->count(2)->create(['project_id' => $project2->id]);
+        $project1 = Project::factory()->createQuietly();
+        $project2 = Project::factory()->createQuietly();
+        Task::factory()->count(3)->createQuietly(['project_id' => $project1->id]);
+        Task::factory()->count(2)->createQuietly(['project_id' => $project2->id]);
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter(['project_id' => $project1->id]);
         $paginator = $this->taskRepository->filter($filter);
@@ -432,10 +437,10 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_filter_tasks_by_assignee()
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        Task::factory()->count(2)->create(['assigned_to' => $user1->id]);
-        Task::factory()->count(1)->create(['assigned_to' => $user2->id]);
+        $user1 = User::factory()->regularUser()->create();
+        $user2 = User::factory()->regularUser()->create();
+        Task::factory()->count(2)->createQuietly(['assigned_to' => $user1->id]);
+        Task::factory()->count(1)->createQuietly(['assigned_to' => $user2->id]);
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter(['assigned_to' => $user1->id]);
         $paginator = $this->taskRepository->filter($filter);
@@ -452,11 +457,11 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_filter_tasks_with_multiple_criteria()
     {
-        $project = Project::factory()->create();
-        $user = User::factory()->create();
+        $project = Project::factory()->createQuietly();
+        $user = User::factory()->regularUser()->create();
 
         // Create tasks that match all criteria
-        Task::factory()->count(2)->create([
+        Task::factory()->count(2)->createQuietly([
             'project_id' => $project->id,
             'assigned_to' => $user->id,
             'status' => TaskStatus::Pending->value,
@@ -464,15 +469,15 @@ class TaskRepositoryTest extends TestCase
         ]);
 
         // Create tasks that don't match all criteria
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'assigned_to' => $user->id,
             'status' => TaskStatus::Completed->value, // Different status
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
-            'assigned_to' => User::factory()->create()->id, // Different assignee
+            'assigned_to' => User::factory()->regularUser()->create()->id, // Different assignee
             'status' => TaskStatus::Pending->value,
         ]);
 
@@ -504,24 +509,24 @@ class TaskRepositoryTest extends TestCase
     #[TestWith(['created_at', 'desc'])]
     public function it_can_filter_tasks_with_sorting(string $sortField, string $sortOrder)
     {
-        $project = Project::factory()->create();
+        $project = Project::factory()->createQuietly();
 
         // Create tasks with different timestamps and due dates
-        $firstTask = Task::factory()->create([
+        $firstTask = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'title' => 'First Task',
             'due_date' => now()->addDays(1),
             'created_at' => now()->subDays(2),
         ]);
 
-        $secondTask = Task::factory()->create([
+        $secondTask = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'title' => 'Second Task',
             'due_date' => now()->addDays(2),
             'created_at' => now()->subDay(),
         ]);
 
-        $thirdTask = Task::factory()->create([
+        $thirdTask = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'title' => 'Third Task',
             'due_date' => now()->addDays(3),
@@ -552,7 +557,7 @@ class TaskRepositoryTest extends TestCase
     #[Test]
     public function it_can_filter_tasks_with_empty_criteria()
     {
-        Task::factory()->count(5)->create();
+        Task::factory()->count(5)->createQuietly();
 
         $filter = new \App\Repositories\Criteria\Task\TaskFilter([]);
         $paginator = $this->taskRepository->filter($filter);

@@ -25,7 +25,7 @@ class RoleRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_role_by_id()
     {
-        $role = Role::factory()->create();
+        $role = Role::bySlug('user')->first();
 
         $foundRole = $this->roleRepository->findById($role->id);
 
@@ -269,7 +269,7 @@ class RoleRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_users_count_for_role()
     {
-        $role = Role::factory()->create();
+        $role = Role::bySlug('user')->first();
         User::factory()->count(3)->create(['role_id' => $role->id]);
         User::factory()->count(2)->create(); // Different role
 
@@ -281,7 +281,7 @@ class RoleRepositoryTest extends TestCase
     #[Test]
     public function it_returns_zero_users_count_for_role_with_no_users()
     {
-        $role = Role::factory()->create();
+        $role = Role::bySlug('user')->first();
 
         $count = $this->roleRepository->getUsersCount($role->id);
 
@@ -310,7 +310,7 @@ class RoleRepositoryTest extends TestCase
     #[Test]
     public function it_can_deactivate_role()
     {
-        $role = Role::factory()->create(['is_active' => true]);
+        $role = Role::bySlug('user')->first();
 
         $deactivated = $this->roleRepository->deactivate($role->id);
 

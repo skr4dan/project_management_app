@@ -238,7 +238,7 @@ class AuthTest extends TestCase
     #[Test]
     public function authenticated_user_can_get_profile()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -272,7 +272,7 @@ class AuthTest extends TestCase
     #[Test]
     public function authenticated_user_can_logout()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -293,7 +293,7 @@ class AuthTest extends TestCase
     #[Test]
     public function authenticated_user_can_refresh_token()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $oldToken = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($oldToken))
@@ -412,7 +412,7 @@ class AuthTest extends TestCase
     #[Test]
     public function protected_route_allows_authenticated_user()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -464,7 +464,7 @@ class AuthTest extends TestCase
     public function protected_route_rejects_expired_token()
     {
         // Create a user and get a token
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         // Manually expire the token by setting a past TTL

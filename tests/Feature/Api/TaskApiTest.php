@@ -20,8 +20,8 @@ class TaskApiTest extends TestCase
     public function authenticated_user_can_list_tasks()
     {
         $user = User::factory()->manager()->create(); // Use manager role to ensure UserCriteria is applied
-        $project = Project::factory()->create(['created_by' => $user->id]);
-        $tasks = Task::factory()->count(3)->create([
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
+        $tasks = Task::factory()->count(3)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
         ]);
@@ -74,16 +74,16 @@ class TaskApiTest extends TestCase
     #[Test]
     public function user_can_filter_tasks_by_status()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
             'status' => TaskStatus::Pending,
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
             'status' => TaskStatus::InProgress,
@@ -106,16 +106,16 @@ class TaskApiTest extends TestCase
     #[Test]
     public function user_can_filter_tasks_by_priority()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'priority' => TaskPriority::High,
             'created_by' => $user->id,
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'priority' => TaskPriority::Low,
             'assigned_to' => $user->id,
@@ -135,12 +135,12 @@ class TaskApiTest extends TestCase
     #[Test]
     public function user_can_filter_tasks_by_project()
     {
-        $user = User::factory()->create();
-        $project1 = Project::factory()->create(['created_by' => $user->id]);
-        $project2 = Project::factory()->create(['created_by' => $user->id]);
+        $user = User::factory()->regularUser()->create();
+        $project1 = Project::factory()->createQuietly(['created_by' => $user->id]);
+        $project2 = Project::factory()->createQuietly(['created_by' => $user->id]);
 
-        Task::factory()->create(['project_id' => $project1->id, 'created_by' => $user->id]);
-        Task::factory()->create(['project_id' => $project2->id, 'assigned_to' => $user->id]);
+        Task::factory()->createQuietly(['project_id' => $project1->id, 'created_by' => $user->id]);
+        Task::factory()->createQuietly(['project_id' => $project2->id, 'assigned_to' => $user->id]);
 
         $token = $this->authenticateUser($user);
 
@@ -156,16 +156,16 @@ class TaskApiTest extends TestCase
     #[Test]
     public function user_can_filter_tasks_by_assigned_user()
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user1->id]);
+        $user1 = User::factory()->regularUser()->create();
+        $user2 = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user1->id]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'assigned_to' => $user1->id,
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'assigned_to' => $user2->id,
         ]);
@@ -187,11 +187,11 @@ class TaskApiTest extends TestCase
         // Clean up any existing tasks to ensure test isolation
         \App\Models\Task::query()->delete();
 
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         // Create task with "meeting" in title
-        $meetingTask = Task::factory()->create([
+        $meetingTask = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
             'title' => 'Meeting task',
@@ -199,7 +199,7 @@ class TaskApiTest extends TestCase
         ]);
 
         // Create task without "meeting"
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
             'title' => 'Development task',
@@ -235,15 +235,15 @@ class TaskApiTest extends TestCase
     public function user_can_sort_tasks_by_due_date()
     {
         $user = User::factory()->admin()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'due_date' => now()->addDays(3),
             'created_by' => $user->id,
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'due_date' => now()->addDays(1),
             'assigned_to' => $user->id,
@@ -283,7 +283,7 @@ class TaskApiTest extends TestCase
         $managerRole = Role::bySlug('manager')->first();
         $manager = User::factory()->create(['role_id' => $managerRole->id]);
 
-        $project = Project::factory()->create(['created_by' => $manager->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $manager->id]);
 
         $token = $this->authenticateUser($manager);
 
@@ -351,7 +351,7 @@ class TaskApiTest extends TestCase
         $managerRole = Role::bySlug('manager')->first();
         $manager = User::factory()->create(['role_id' => $managerRole->id]);
 
-        $project = Project::factory()->create(['created_by' => $manager->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $manager->id]);
         $token = $this->authenticateUser($manager);
 
         $taskData = [
@@ -370,9 +370,9 @@ class TaskApiTest extends TestCase
     #[Test]
     public function authenticated_user_can_view_task_details()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
-        $task = Task::factory()->create(['project_id' => $project->id]);
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
+        $task = Task::factory()->createQuietly(['project_id' => $project->id]);
 
         $token = $this->authenticateUser($user);
 
@@ -395,9 +395,9 @@ class TaskApiTest extends TestCase
     #[Test]
     public function user_can_update_assigned_task()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
-        $task = Task::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
+        $task = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'assigned_to' => $user->id,
             'status' => TaskStatus::Pending,
@@ -427,9 +427,9 @@ class TaskApiTest extends TestCase
     #[Test]
     public function user_can_update_created_task()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
-        $task = Task::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
+        $task = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
             'assigned_to' => null,
@@ -457,11 +457,11 @@ class TaskApiTest extends TestCase
     #[Test]
     public function user_cannot_update_unassigned_task()
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user1->id]);
+        $user1 = User::factory()->regularUser()->create();
+        $user2 = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user1->id]);
 
-        $task = Task::factory()->create([
+        $task = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user1->id,
             'assigned_to' => $user2->id,
@@ -486,9 +486,9 @@ class TaskApiTest extends TestCase
     #[Test]
     public function user_can_delete_created_task()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
-        $task = Task::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
+        $task = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
         ]);
@@ -515,9 +515,9 @@ class TaskApiTest extends TestCase
         $adminRole = Role::bySlug('admin')->first();
         $admin = User::factory()->create(['role_id' => $adminRole->id]);
 
-        $otherUser = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $otherUser->id]);
-        $task = Task::factory()->create([
+        $otherUser = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $otherUser->id]);
+        $task = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $otherUser->id,
         ]);
@@ -537,7 +537,7 @@ class TaskApiTest extends TestCase
     #[Test]
     public function task_filter_validation_rejects_invalid_status()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -550,7 +550,7 @@ class TaskApiTest extends TestCase
     #[Test]
     public function task_filter_validation_rejects_invalid_priority()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -563,7 +563,7 @@ class TaskApiTest extends TestCase
     #[Test]
     public function task_filter_validation_rejects_invalid_sort_field()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -577,10 +577,10 @@ class TaskApiTest extends TestCase
     public function user_can_paginate_tasks_with_custom_per_page()
     {
         $user = User::factory()->manager()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         // Create 10 tasks
-        Task::factory()->count(10)->create([
+        Task::factory()->count(10)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
         ]);
@@ -612,10 +612,10 @@ class TaskApiTest extends TestCase
     public function user_can_navigate_to_specific_page()
     {
         $user = User::factory()->manager()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         // Create 25 tasks to have multiple pages
-        $tasks = Task::factory()->count(25)->create([
+        $tasks = Task::factory()->count(25)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
         ]);
@@ -641,16 +641,16 @@ class TaskApiTest extends TestCase
     public function user_can_paginate_with_filters()
     {
         $user = User::factory()->manager()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         // Create tasks with different statuses
-        Task::factory()->count(8)->create([
+        Task::factory()->count(8)->createQuietly([
             'project_id' => $project->id,
             'status' => TaskStatus::Pending,
             'created_by' => $user->id,
         ]);
 
-        Task::factory()->count(5)->create([
+        Task::factory()->count(5)->createQuietly([
             'project_id' => $project->id,
             'status' => TaskStatus::Completed,
             'created_by' => $user->id,
@@ -677,7 +677,7 @@ class TaskApiTest extends TestCase
     #[Test]
     public function pagination_validation_rejects_invalid_per_page()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -690,7 +690,7 @@ class TaskApiTest extends TestCase
     #[Test]
     public function pagination_validation_rejects_negative_per_page()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -703,7 +703,7 @@ class TaskApiTest extends TestCase
     #[Test]
     public function pagination_validation_rejects_invalid_page()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -716,7 +716,7 @@ class TaskApiTest extends TestCase
     #[Test]
     public function pagination_validation_rejects_negative_page()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -730,10 +730,10 @@ class TaskApiTest extends TestCase
     public function user_can_request_last_page_of_paginated_results()
     {
         $user = User::factory()->manager()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         // Create 23 tasks (will result in 2 pages with per_page=15, and 1 page with per_page=10)
-        Task::factory()->count(23)->create([
+        Task::factory()->count(23)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
         ]);
@@ -760,10 +760,10 @@ class TaskApiTest extends TestCase
     public function pagination_returns_empty_data_for_page_beyond_results()
     {
         $user = User::factory()->manager()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
 
         // Create only 5 tasks
-        Task::factory()->count(5)->create([
+        Task::factory()->count(5)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user->id,
         ]);
@@ -789,10 +789,10 @@ class TaskApiTest extends TestCase
     #[Test]
     public function task_resource_returns_correct_structure_with_all_relationships_loaded()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
-        $assignedUser = User::factory()->create();
-        $task = Task::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
+        $assignedUser = User::factory()->regularUser()->create();
+        $task = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'assigned_to' => $assignedUser->id,
             'created_by' => $user->id,
@@ -862,9 +862,9 @@ class TaskApiTest extends TestCase
     #[Test]
     public function task_resource_returns_correct_structure_with_no_relationships_loaded()
     {
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
-        $task = Task::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
+        $task = Task::factory()->createQuietly([
             'project_id' => $project->id,
             'assigned_to' => null,
             'created_by' => $user->id,
@@ -924,8 +924,8 @@ class TaskApiTest extends TestCase
     #[Test]
     public function task_resource_handles_null_due_date_correctly()
     {
-        $user = User::factory()->create();
-        $task = Task::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        $task = Task::factory()->createQuietly([
             'created_by' => $user->id,
             'due_date' => null,
         ]);
@@ -944,9 +944,9 @@ class TaskApiTest extends TestCase
     #[Test]
     public function task_resource_handles_present_due_date_correctly()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $dueDate = now()->addDays(7)->microsecond(0);
-        $task = Task::factory()->create([
+        $task = Task::factory()->createQuietly([
             'created_by' => $user->id,
             'due_date' => $dueDate,
         ]);
@@ -966,10 +966,10 @@ class TaskApiTest extends TestCase
     public function task_list_resource_returns_correct_structure_with_relationships()
     {
         $user = User::factory()->manager()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
-        $assignedUser = User::factory()->create();
+        $project = Project::factory()->createQuietly(['created_by' => $user->id]);
+        $assignedUser = User::factory()->regularUser()->create();
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'assigned_to' => $assignedUser->id,
             'created_by' => $user->id,

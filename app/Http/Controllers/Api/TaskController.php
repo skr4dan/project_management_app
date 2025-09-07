@@ -201,6 +201,9 @@ class TaskController extends Controller
 
             $updatedTask = $this->taskRepository->findById($id);
 
+            // Load relationships for the response
+            $updatedTask->load(['project', 'assignedTo', 'createdBy']);
+
             return response()->json([
                 'success' => true,
                 'data' => new TaskResource($updatedTask),

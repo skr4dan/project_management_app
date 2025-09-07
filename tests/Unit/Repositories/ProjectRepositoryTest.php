@@ -27,7 +27,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_project_by_id()
     {
-        $project = Project::factory()->create();
+        $project = Project::factory()->createQuietly();
 
         $foundProject = $this->projectRepository->findById($project->id);
 
@@ -46,9 +46,9 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_projects_by_owner()
     {
-        $user = User::factory()->create();
-        Project::factory()->count(2)->create(['created_by' => $user->id]);
-        Project::factory()->count(1)->create(); // Different owner
+        $user = User::factory()->regularUser()->create();
+        Project::factory()->count(2)->createQuietly(['created_by' => $user->id]);
+        Project::factory()->count(1)->createQuietly(); // Different owner
 
         $projects = $this->projectRepository->getByOwner($user->id);
 
@@ -62,7 +62,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_returns_empty_collection_when_no_projects_found_by_owner()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
 
         $projects = $this->projectRepository->getByOwner($user->id);
 
@@ -73,8 +73,8 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_find_projects_by_status()
     {
-        Project::factory()->count(2)->create(['status' => ProjectStatus::Active->value]);
-        Project::factory()->count(1)->create(['status' => ProjectStatus::Completed->value]);
+        Project::factory()->count(2)->createQuietly(['status' => ProjectStatus::Active->value]);
+        Project::factory()->count(1)->createQuietly(['status' => ProjectStatus::Completed->value]);
 
         $projects = $this->projectRepository->getByStatus(ProjectStatus::Active);
 
@@ -88,8 +88,8 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_active_projects()
     {
-        Project::factory()->count(3)->create(['status' => ProjectStatus::Active->value]);
-        Project::factory()->count(2)->create(['status' => ProjectStatus::Completed->value]);
+        Project::factory()->count(3)->createQuietly(['status' => ProjectStatus::Active->value]);
+        Project::factory()->count(2)->createQuietly(['status' => ProjectStatus::Completed->value]);
 
         $projects = $this->projectRepository->getActiveProjects();
 
@@ -103,8 +103,8 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_completed_projects()
     {
-        Project::factory()->count(2)->create(['status' => ProjectStatus::Completed->value]);
-        Project::factory()->count(3)->create(['status' => ProjectStatus::Active->value]);
+        Project::factory()->count(2)->createQuietly(['status' => ProjectStatus::Completed->value]);
+        Project::factory()->count(3)->createQuietly(['status' => ProjectStatus::Active->value]);
 
         $projects = $this->projectRepository->getCompletedProjects();
 
@@ -118,7 +118,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_create_project_from_dto()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->regularUser()->create();
         $projectDTO = new \App\DTOs\Project\ProjectDTO(
             id: null,
             name: 'Test Project',
@@ -147,7 +147,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_update_project_from_dto()
     {
-        $project = Project::factory()->create([
+        $project = Project::factory()->createQuietly([
             'name' => 'Original Name',
             'description' => 'Original Description',
             'status' => ProjectStatus::Active->value,
@@ -192,7 +192,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_update_project_status()
     {
-        $project = Project::factory()->create(['status' => ProjectStatus::Active->value]);
+        $project = Project::factory()->createQuietly(['status' => ProjectStatus::Active->value]);
 
         $updated = $this->projectRepository->updateStatus($project->id, ProjectStatus::Completed);
 
@@ -211,8 +211,8 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_project_with_tasks_count()
     {
-        $project = Project::factory()->create();
-        Task::factory()->count(3)->create(['project_id' => $project->id]);
+        $project = Project::factory()->createQuietly();
+        Task::factory()->count(3)->createQuietly(['project_id' => $project->id]);
 
         $result = $this->projectRepository->getWithTasksCount($project->id);
 
@@ -232,9 +232,9 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_projects_with_statistics()
     {
-        $user = User::factory()->create();
-        $projects = Project::factory()->count(2)->create(['created_by' => $user->id]);
-        Task::factory()->count(5)->create(['project_id' => $projects->first()->id]);
+        $user = User::factory()->regularUser()->create();
+        $projects = Project::factory()->count(2)->createQuietly(['created_by' => $user->id]);
+        Task::factory()->count(5)->createQuietly(['project_id' => $projects->first()->id]);
 
         $results = $this->projectRepository->getWithStatistics($user->id);
 
@@ -245,7 +245,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_projects_with_statistics_for_all_users()
     {
-        Project::factory()->count(3)->create();
+        Project::factory()->count(3)->createQuietly();
 
         $results = $this->projectRepository->getWithStatistics();
 
@@ -256,12 +256,12 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_completion_percentage()
     {
-        $project = Project::factory()->create();
-        Task::factory()->count(2)->create([
+        $project = Project::factory()->createQuietly();
+        Task::factory()->count(2)->createQuietly([
             'project_id' => $project->id,
             'status' => 'completed',
         ]);
-        Task::factory()->count(3)->create([
+        Task::factory()->count(3)->createQuietly([
             'project_id' => $project->id,
             'status' => 'pending',
         ]);
@@ -274,7 +274,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_returns_zero_completion_percentage_for_project_with_no_tasks()
     {
-        $project = Project::factory()->create();
+        $project = Project::factory()->createQuietly();
 
         $percentage = $this->projectRepository->getCompletionPercentage($project->id);
 
@@ -284,16 +284,16 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_search_projects()
     {
-        $user = User::factory()->create();
-        Project::factory()->create([
+        $user = User::factory()->regularUser()->create();
+        Project::factory()->createQuietly([
             'name' => 'Laravel Project',
             'created_by' => $user->id,
         ]);
-        Project::factory()->create([
+        Project::factory()->createQuietly([
             'name' => 'React Project',
             'created_by' => $user->id,
         ]);
-        Project::factory()->create(['name' => 'Vue Project']); // Different user
+        Project::factory()->createQuietly(['name' => 'Vue Project']); // Different user
 
         $results = $this->projectRepository->search('Laravel', $user->id);
 
@@ -304,8 +304,8 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_search_projects_without_user_filter()
     {
-        Project::factory()->create(['name' => 'Laravel Project']);
-        Project::factory()->create(['name' => 'React Project']);
+        Project::factory()->createQuietly(['name' => 'Laravel Project']);
+        Project::factory()->createQuietly(['name' => 'React Project']);
 
         $results = $this->projectRepository->search('Laravel');
 
@@ -316,7 +316,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_returns_empty_collection_when_search_finds_no_results()
     {
-        Project::factory()->create(['name' => 'Laravel Project']);
+        Project::factory()->createQuietly(['name' => 'Laravel Project']);
 
         $results = $this->projectRepository->search('Non-existent Project');
 
@@ -326,12 +326,12 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_get_user_project_statistics()
     {
-        $user = User::factory()->create();
-        Project::factory()->count(2)->create([
+        $user = User::factory()->regularUser()->create();
+        Project::factory()->count(2)->createQuietly([
             'created_by' => $user->id,
             'status' => ProjectStatus::Active->value,
         ]);
-        Project::factory()->count(1)->create([
+        Project::factory()->count(1)->createQuietly([
             'created_by' => $user->id,
             'status' => ProjectStatus::Completed->value,
         ]);
@@ -348,7 +348,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_archive_project()
     {
-        $project = Project::factory()->create(['status' => ProjectStatus::Active->value]);
+        $project = Project::factory()->createQuietly(['status' => ProjectStatus::Active->value]);
 
         $archived = $this->projectRepository->archive($project->id);
 
@@ -367,7 +367,7 @@ class ProjectRepositoryTest extends TestCase
     #[Test]
     public function it_can_complete_project()
     {
-        $project = Project::factory()->create(['status' => ProjectStatus::Active->value]);
+        $project = Project::factory()->createQuietly(['status' => ProjectStatus::Active->value]);
 
         $completed = $this->projectRepository->complete($project->id);
 

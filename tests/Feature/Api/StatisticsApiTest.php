@@ -17,53 +17,53 @@ class StatisticsApiTest extends TestCase
     public function admin_can_access_statistics()
     {
         $admin = User::factory()->admin()->create();
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
+        $user1 = User::factory()->regularUser()->create();
+        $user2 = User::factory()->regularUser()->create();
 
         // Create projects
-        $project1 = Project::factory()->create(['created_by' => $admin->id]);
-        $project2 = Project::factory()->create(['created_by' => $user1->id]);
+        $project1 = Project::factory()->createQuietly(['created_by' => $admin->id]);
+        $project2 = Project::factory()->createQuietly(['created_by' => $user1->id]);
 
         // Create tasks with different statuses
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project1->id,
             'created_by' => $admin->id,
             'status' => \App\Enums\Task\TaskStatus::Completed,
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project1->id,
             'created_by' => $admin->id,
             'status' => \App\Enums\Task\TaskStatus::Completed,
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project1->id,
             'created_by' => $user1->id,
             'status' => \App\Enums\Task\TaskStatus::InProgress,
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project2->id,
             'created_by' => $user2->id,
             'status' => \App\Enums\Task\TaskStatus::Pending,
         ]);
 
         // Create additional tasks for top active users
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project1->id,
             'created_by' => $admin->id,
             'status' => \App\Enums\Task\TaskStatus::Completed,
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project2->id,
             'created_by' => $user1->id,
             'status' => \App\Enums\Task\TaskStatus::InProgress,
         ]);
 
         // Create overdue task
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project1->id,
             'created_by' => $admin->id,
             'due_date' => now()->subDay(),
@@ -129,7 +129,7 @@ class StatisticsApiTest extends TestCase
     #[Test]
     public function non_admin_cannot_access_statistics()
     {
-        $user = User::factory()->create(); // Regular user
+        $user = User::factory()->regularUser()->create(); // Regular user
         $token = $this->authenticateUser($user);
 
         $response = $this->withHeaders($this->getAuthHeader($token))
@@ -175,17 +175,17 @@ class StatisticsApiTest extends TestCase
     public function statistics_overdue_tasks_count_exact()
     {
         $admin = User::factory()->admin()->create();
-        $project = Project::factory()->create(['created_by' => $admin->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $admin->id]);
 
         // Create 2 overdue tasks
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $admin->id,
             'due_date' => now()->subDay(),
             'status' => \App\Enums\Task\TaskStatus::Pending,
         ]);
 
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $admin->id,
             'due_date' => now()->subDays(2),
@@ -193,7 +193,7 @@ class StatisticsApiTest extends TestCase
         ]);
 
         // Create 1 non-overdue task
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $admin->id,
             'due_date' => now()->addDay(),
@@ -201,7 +201,7 @@ class StatisticsApiTest extends TestCase
         ]);
 
         // Create 1 completed overdue task (should not count as overdue)
-        Task::factory()->create([
+        Task::factory()->createQuietly([
             'project_id' => $project->id,
             'created_by' => $admin->id,
             'due_date' => now()->subDay(),
@@ -226,33 +226,33 @@ class StatisticsApiTest extends TestCase
     public function statistics_top_users_ranking_exact()
     {
         $admin = User::factory()->admin()->create();
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        $user3 = User::factory()->create();
+        $user1 = User::factory()->regularUser()->create();
+        $user2 = User::factory()->regularUser()->create();
+        $user3 = User::factory()->regularUser()->create();
 
-        $project = Project::factory()->create(['created_by' => $admin->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $admin->id]);
 
         // Create tasks for each user with specific counts
         // User 3: 5 tasks
-        Task::factory()->count(5)->create([
+        Task::factory()->count(5)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user3->id,
         ]);
 
         // User 1: 4 tasks
-        Task::factory()->count(4)->create([
+        Task::factory()->count(4)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user1->id,
         ]);
 
         // User 2: 3 tasks
-        Task::factory()->count(3)->create([
+        Task::factory()->count(3)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $user2->id,
         ]);
 
         // Admin: 2 tasks
-        Task::factory()->count(2)->create([
+        Task::factory()->count(2)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $admin->id,
         ]);
@@ -290,22 +290,22 @@ class StatisticsApiTest extends TestCase
     public function statistics_task_status_distribution_exact()
     {
         $admin = User::factory()->admin()->create();
-        $project = Project::factory()->create(['created_by' => $admin->id]);
+        $project = Project::factory()->createQuietly(['created_by' => $admin->id]);
 
         // Create specific number of tasks for each status
-        Task::factory()->count(5)->create([
+        Task::factory()->count(5)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $admin->id,
             'status' => \App\Enums\Task\TaskStatus::Completed,
         ]);
 
-        Task::factory()->count(3)->create([
+        Task::factory()->count(3)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $admin->id,
             'status' => \App\Enums\Task\TaskStatus::InProgress,
         ]);
 
-        Task::factory()->count(7)->create([
+        Task::factory()->count(7)->createQuietly([
             'project_id' => $project->id,
             'created_by' => $admin->id,
             'status' => \App\Enums\Task\TaskStatus::Pending,

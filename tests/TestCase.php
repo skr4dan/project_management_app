@@ -22,7 +22,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function authenticateUser($user = null): string
     {
-        $user = $user ?: \App\Models\User::factory()->create();
+        $user = $user ?: \App\Models\User::factory()->regularUser()->create();
 
         return JWTAuth::fromUser($user);
     }

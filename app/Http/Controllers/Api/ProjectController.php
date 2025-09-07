@@ -143,11 +143,6 @@ class ProjectController extends Controller
                 ], Response::HTTP_FORBIDDEN);
             }
 
-            // Prepare update data
-            $updateData = array_filter($request->validated(), function ($value) {
-                return $value !== null;
-            });
-
             // Get current project data for merging
             $currentData = [
                 'id' => $project->id,
@@ -159,7 +154,7 @@ class ProjectController extends Controller
                 'updated_at' => $project->updated_at,
             ];
 
-            $mergedData = array_merge($currentData, $updateData);
+            $mergedData = array_merge($currentData, $request->validated());
 
             $projectDTO = ProjectDTO::fromArray($mergedData);
             $updated = $this->projectRepository->updateFromDTO($id, $projectDTO);
@@ -172,6 +167,9 @@ class ProjectController extends Controller
             }
 
             $updatedProject = $this->projectRepository->findById($id);
+
+            // Load relationships for the response
+            $updatedProject->load(['createdBy', 'tasks']);
 
             return response()->json([
                 'success' => true,

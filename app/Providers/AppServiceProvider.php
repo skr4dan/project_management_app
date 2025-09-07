@@ -44,44 +44,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Clear statistics cache when data changes
-        $this->setupStatisticsCacheInvalidation();
-    }
-
-    /**
-     * Setup cache invalidation for statistics when data changes.
-     */
-    private function setupStatisticsCacheInvalidation(): void
-    {
-        // Clear statistics cache when projects change
-        \App\Models\Project::created(fn () => $this->clearStatisticsCache(['projects']));
-        \App\Models\Project::updated(fn () => $this->clearStatisticsCache(['projects']));
-        \App\Models\Project::deleted(fn () => $this->clearStatisticsCache(['projects']));
-
-        // Clear statistics cache when tasks change
-        \App\Models\Task::created(fn () => $this->clearStatisticsCache(['tasks']));
-        \App\Models\Task::updated(fn () => $this->clearStatisticsCache(['tasks']));
-        \App\Models\Task::deleted(fn () => $this->clearStatisticsCache(['tasks']));
-
-        // Clear statistics cache when users change
-        \App\Models\User::created(fn () => $this->clearStatisticsCache(['users']));
-        \App\Models\User::updated(fn () => $this->clearStatisticsCache(['users']));
-        \App\Models\User::deleted(fn () => $this->clearStatisticsCache(['users']));
-    }
-
-    /**
-     * Clear statistics cache with specific tags.
-     *
-     * @param  array<string>  $tags
-     */
-    private function clearStatisticsCache(array $tags): void
-    {
-        try {
-            $statisticsService = app(StatisticsServiceInterface::class);
-            $statisticsService->clearCache($tags);
-        } catch (\Exception $e) {
-            // Log error but don't break the application
-            logger("Failed to clear statistics cache: {$e->getMessage()}");
-        }
+        //
     }
 }
