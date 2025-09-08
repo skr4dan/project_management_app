@@ -33,14 +33,14 @@ Route::middleware('jwt.auth')->group(function () {
     });
 
     Route::prefix('users')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->middleware('role:admin,manager');
+        Route::get('/', [UserController::class, 'index']);
         Route::get('/{id}', [UserController::class, 'show']);
         Route::put('/{id}', [UserController::class, 'update']);
     });
 
     Route::prefix('projects')->group(function () {
         Route::get('/', [ProjectController::class, 'index']);
-        Route::post('/', [ProjectController::class, 'store'])->middleware('role:manager,admin');
+        Route::post('/', [ProjectController::class, 'store']);
         Route::get('/{id}', [ProjectController::class, 'show']);
         Route::put('/{id}', [ProjectController::class, 'update']);
         Route::delete('/{id}', [ProjectController::class, 'destroy']);
@@ -48,13 +48,13 @@ Route::middleware('jwt.auth')->group(function () {
 
     Route::prefix('tasks')->group(function () {
         Route::get('/', [TaskController::class, 'index']);
-        Route::post('/', [TaskController::class, 'store'])->middleware('role:manager,admin');
+        Route::post('/', [TaskController::class, 'store']);
         Route::get('/{id}', [TaskController::class, 'show']);
         Route::put('/{id}', [TaskController::class, 'update']);
         Route::delete('/{id}', [TaskController::class, 'destroy']);
     });
 
     Route::prefix('statistics')->group(function () {
-        Route::get('/', [StatisticsController::class, 'index'])->middleware('role:admin');
+        Route::get('/', [StatisticsController::class, 'index']);
     });
 });

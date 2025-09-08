@@ -7,16 +7,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Responses\JsonResponse;
+use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
-use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Http\JsonResponse as LaravelJsonResponse;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
-        private readonly AuthServiceInterface $authService,
     ) {}
 
     /**
@@ -25,6 +25,11 @@ class UserController extends Controller
     public function index(): LaravelJsonResponse
     {
         try {
+            $r = Gate::inspect('viewAny', User::class);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
+            }
+
             $users = $this->userRepository->getActiveUsers()->load('role');
 
             return JsonResponse::success(UserResource::collection($users), 'Users retrieved successfully');
@@ -45,6 +50,11 @@ class UserController extends Controller
                 return JsonResponse::notFound('User not found');
             }
 
+            $r = Gate::inspect('view', $user);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
+            }
+
             // Load role relationship for the response
             $user->load('role');
 
@@ -60,20 +70,15 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, int $id): LaravelJsonResponse
     {
         try {
-            /** @var \App\Models\User $authenticatedUser */
-            $authenticatedUser = $this->authService->user();
-
             $targetUser = $this->userRepository->findById($id);
 
             if (! $targetUser) {
                 return JsonResponse::notFound('User not found');
             }
 
-            // Allow admin to update any user, or users to update their own profile
-            /** @var \App\Models\Role $role */
-            $role = $authenticatedUser->role;
-            if ($authenticatedUser->id !== $id && $role->slug !== 'admin') {
-                return JsonResponse::forbidden('You can only update your own profile');
+            $r = Gate::inspect('update', $targetUser);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
             }
 
             $user = $targetUser;

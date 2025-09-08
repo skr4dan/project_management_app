@@ -12,10 +12,12 @@ use App\Http\Requests\Api\TaskIndexRequest;
 use App\Http\Requests\Api\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Http\Responses\JsonResponse;
+use App\Models\Task;
 use App\Models\User;
 use App\Repositories\Contracts\TaskRepositoryInterface;
 use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Http\JsonResponse as LaravelJsonResponse;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class TaskController extends Controller
@@ -31,15 +33,19 @@ class TaskController extends Controller
     public function index(TaskIndexRequest $request): LaravelJsonResponse
     {
         try {
+            $r = Gate::inspect('viewAny', Task::class);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
+            }
+
             /** @var \App\Models\User $user */
             $user = $this->authService->user();
             $filters = $request->getFilters();
             $filter = new \App\Repositories\Criteria\Task\TaskFilter($filters);
             $pagination = PaginationDTO::fromRequest($request->getPaginationData());
 
-            /** @var \App\Models\Role $role */
             $role = $user->role;
-            if ($role->slug !== 'admin') {
+            if ($role && $role->slug !== 'admin') {
                 // Add user filter criteria, so user can only see tasks assigned to them or created by them
                 $filter->addCriteria(new \App\Repositories\Criteria\Task\UserCriteria($user->id));
             }
@@ -69,11 +75,13 @@ class TaskController extends Controller
     public function store(CreateTaskRequest $request): LaravelJsonResponse
     {
         try {
-            $user = $this->authService->user();
-
-            if (! $user) {
-                return JsonResponse::unauthorized('User not authenticated');
+            $r = Gate::inspect('create', Task::class);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
             }
+
+            /** @var \App\Models\User $user */
+            $user = $this->authService->user();
 
             $taskData = array_merge($request->validated(), [
                 'created_by' => $user->id,
@@ -105,6 +113,11 @@ class TaskController extends Controller
                 return JsonResponse::notFound('Task not found');
             }
 
+            $r = Gate::inspect('view', $task);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
+            }
+
             // Load relationships for the response
             $task->load(['project', 'assignedTo', 'createdBy']);
 
@@ -120,22 +133,15 @@ class TaskController extends Controller
     public function update(UpdateTaskRequest $request, int $id): LaravelJsonResponse
     {
         try {
-            /** @var \App\Models\User $user */
-            $user = $this->authService->user();
             $task = $this->taskRepository->findById($id);
 
             if (! $task) {
                 return JsonResponse::notFound('Task not found');
             }
 
-            /** @var \App\Models\Role $role */
-            $role = $user->role;
-            $canUpdate = $task->assigned_to === $user->id ||
-                        ($task->created_by === $user->id && $task->assigned_to === null) ||
-                        $role->slug === 'admin';
-
-            if (! $canUpdate) {
-                return JsonResponse::forbidden('You can only update tasks assigned to you or created by you');
+            $r = Gate::inspect('update', $task);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
             }
 
             // Prepare update data
@@ -184,22 +190,15 @@ class TaskController extends Controller
     public function destroy(int $id): LaravelJsonResponse
     {
         try {
-            $user = $this->authService->user();
             $task = $this->taskRepository->findById($id);
-
-            if (! $user) {
-                return JsonResponse::unauthorized('User not authenticated');
-            }
 
             if (! $task) {
                 return JsonResponse::notFound('Task not found');
             }
 
-            // Check permissions: author or admin
-            /** @var \App\Models\Role $role */
-            $role = $user->role;
-            if ($task->created_by !== $user->id && $role->slug !== 'admin') {
-                return JsonResponse::forbidden('You can only delete your own tasks');
+            $r = Gate::inspect('delete', $task);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
             }
 
             // Note: Laravel repositories typically don't have delete methods

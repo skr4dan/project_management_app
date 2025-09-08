@@ -10,9 +10,11 @@ use App\Http\Requests\Api\ProjectIndexRequest;
 use App\Http\Requests\Api\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Http\Responses\JsonResponse;
+use App\Models\Project;
 use App\Repositories\Contracts\ProjectRepositoryInterface;
 use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Http\JsonResponse as LaravelJsonResponse;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProjectController extends Controller
@@ -28,6 +30,11 @@ class ProjectController extends Controller
     public function index(ProjectIndexRequest $request): LaravelJsonResponse
     {
         try {
+            $r = Gate::inspect('viewAny', Project::class);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
+            }
+
             $status = $request->validated('status', null);
 
             if (is_null($status)) {
@@ -48,6 +55,11 @@ class ProjectController extends Controller
     public function store(CreateProjectRequest $request): LaravelJsonResponse
     {
         try {
+            $r = Gate::inspect('create', Project::class);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
+            }
+
             /** @var \App\Models\User $user */
             $user = $this->authService->user();
 
@@ -80,6 +92,11 @@ class ProjectController extends Controller
                 return JsonResponse::notFound('Project not found');
             }
 
+            $r = Gate::inspect('view', $project);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
+            }
+
             // Load relationships for the response
             $project->load(['createdBy', 'tasks']);
 
@@ -95,20 +112,15 @@ class ProjectController extends Controller
     public function update(UpdateProjectRequest $request, int $id): LaravelJsonResponse
     {
         try {
-            $user = $this->authService->user();
             $project = $this->projectRepository->findById($id);
-
-            if (! $user) {
-                return JsonResponse::unauthorized('User not authenticated');
-            }
 
             if (! $project) {
                 return JsonResponse::notFound('Project not found');
             }
 
-            // Check permissions: author or admin
-            if ($project->created_by !== $user->id && $user->role?->slug !== 'admin') {
-                return JsonResponse::forbidden('You can only update your own projects');
+            $r = Gate::inspect('update', $project);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
             }
 
             // Get current project data for merging
@@ -148,19 +160,15 @@ class ProjectController extends Controller
     public function destroy(int $id): LaravelJsonResponse
     {
         try {
-            /** @var \App\Models\User $user */
-            $user = $this->authService->user();
             $project = $this->projectRepository->findById($id);
 
             if (! $project) {
                 return JsonResponse::notFound('Project not found');
             }
 
-            /** @var \App\Models\Role $role */
-            $role = $user->role;
-            // Check permissions: author or admin
-            if ($project->created_by !== $user->id && $role->slug !== 'admin') {
-                return JsonResponse::forbidden('You can only delete your own projects');
+            $r = Gate::inspect('delete', $project);
+            if ($r->denied()) {
+                return JsonResponse::forbidden($r->message() ?? 'Access denied');
             }
 
             // Note: Laravel repositories typically don't have delete methods

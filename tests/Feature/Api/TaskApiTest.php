@@ -479,7 +479,7 @@ class TaskApiTest extends TestCase
         $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-                'message' => 'You can only update tasks assigned to you or created by you',
+                'message' => 'You can only update tasks assigned to you or that you created.',
             ]);
     }
 

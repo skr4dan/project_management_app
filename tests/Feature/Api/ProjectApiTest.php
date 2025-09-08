@@ -175,7 +175,7 @@ class ProjectApiTest extends TestCase
         $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-                'message' => 'Insufficient permissions',
+                'message' => 'You do not have permission to create projects.',
             ]);
     }
 
@@ -346,7 +346,7 @@ class ProjectApiTest extends TestCase
         $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-                'message' => 'You can only update your own projects',
+                'message' => 'You can only update projects you created or have manage permissions for.',
             ]);
     }
 
@@ -427,7 +427,7 @@ class ProjectApiTest extends TestCase
         $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-                'message' => 'You can only delete your own projects',
+                'message' => 'You can only delete projects you created or have manage permissions for.',
             ]);
     }
 

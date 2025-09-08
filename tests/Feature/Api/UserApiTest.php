@@ -89,7 +89,7 @@ class UserApiTest extends TestCase
         $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-                'message' => 'Insufficient permissions',
+                'message' => 'You do not have permission to view users.',
             ]);
     }
 
@@ -299,7 +299,7 @@ class UserApiTest extends TestCase
         $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-                'message' => 'You can only update your own profile',
+                'message' => 'You can only update your own profile.',
             ]);
     }
 
