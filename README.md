@@ -2,6 +2,11 @@
 
 A comprehensive Laravel 12-based project management application with JWT authentication, role-based access control, and RESTful API endpoints for managing projects, tasks, and users.
 
+## ✅ Quality Assurance Status
+
+- **✅ PHPStan Analysis**: No errors (Level 8 - Maximum Strictness)
+- **✅ Tests**: All 315 tests passing (1,349 assertions in 6.02s)
+
 ## 📋 Prerequisites
 
 - PHP 8.2 or higher
@@ -283,6 +288,24 @@ A Postman collection file is included in the repository (`postman_collection.jso
 
 ## 🧪 Testing
 
+This project includes **315 comprehensive individual tests** covering various aspects of the application:
+
+- **Feature Tests** (133 tests across 9 files):
+  - **AuthTest.php**: 22 authentication tests (registration, login, profile, token management)
+  - **TaskApiTest.php**: 35 task API tests (CRUD operations, validation, permissions)
+  - **UserApiTest.php**: 22 user API tests (user management, permissions)
+  - **StatisticsApiTest.php**: 7 statistics API tests (admin access, data integrity)
+  - **ProjectApiTest.php**: 23 project API tests (CRUD operations, status changes)
+  - **Notification System Tests**: 24 tests across 4 files covering task assignments, status changes, and project updates
+
+- **Unit Tests** (182 tests across 17 files):
+  - **Repository Tests**: 93 tests across 4 files (User, Task, Project, Role repositories)
+  - **Event Tests**: 17 tests across 3 files (TaskAssigned, TaskStatusChanged, ProjectStatusChanged)
+  - **Job Tests**: 20 tests across 3 files (notification jobs for tasks and projects)
+  - **Listener Tests**: 15 tests across 3 files (notification listeners)
+  - **Mail Tests**: 18 tests across 3 files (email notifications)
+  - **AuthServiceTest.php**: 19 authentication service tests
+
 ### Run All Tests
 ```bash
 php artisan test
@@ -315,15 +338,21 @@ php artisan serve
 npm run dev
 ```
 
-### Run Code Linting
+### Code Quality & Analysis
+
+#### Run Code Style Fixing (Laravel Pint)
 ```bash
 ./vendor/bin/pint
 ```
 
-### Run Static Analysis
+This project uses **Laravel Pint** with the Laravel preset to automatically fix code style issues and maintain consistent formatting across the codebase.
+
+#### Run Static Analysis (PHPStan)
 ```bash
 ./vendor/bin/phpstan analyse
 ```
+
+The project is configured with **PHPStan at level 8** (maximum strictness) for comprehensive static analysis coverage of the `app/` and `database/` directories, ensuring high code quality and catching potential issues early.
 
 ## 📁 Project Structure
 
