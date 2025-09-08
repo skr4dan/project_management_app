@@ -11,10 +11,11 @@ use App\Http\Requests\Api\CreateTaskRequest;
 use App\Http\Requests\Api\TaskIndexRequest;
 use App\Http\Requests\Api\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
+use App\Http\Responses\JsonResponse;
 use App\Models\User;
 use App\Repositories\Contracts\TaskRepositoryInterface;
 use App\Services\Contracts\AuthServiceInterface;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\JsonResponse as LaravelJsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class TaskController extends Controller
@@ -27,7 +28,7 @@ class TaskController extends Controller
     /**
      * Get list of tasks with filtering and sorting
      */
-    public function index(TaskIndexRequest $request): JsonResponse
+    public function index(TaskIndexRequest $request): LaravelJsonResponse
     {
         try {
             /** @var \App\Models\User $user */
@@ -45,10 +46,9 @@ class TaskController extends Controller
 
             $tasks = $this->taskRepository->filter($filter, $pagination);
 
-            return response()->json([
-                'success' => true,
-                'data' => TaskResource::collection($tasks),
-                'pagination' => [
+            return JsonResponse::successPaginated(
+                TaskResource::collection($tasks),
+                [
                     'current_page' => $tasks->currentPage(),
                     'per_page' => $tasks->perPage(),
                     'total' => $tasks->total(),
@@ -56,29 +56,23 @@ class TaskController extends Controller
                     'from' => $tasks->firstItem(),
                     'to' => $tasks->lastItem(),
                 ],
-                'message' => 'Tasks retrieved successfully',
-            ], Response::HTTP_OK);
+                'Tasks retrieved successfully'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve tasks',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to retrieve tasks');
         }
     }
 
     /**
      * Create a new task (manager, admin only)
      */
-    public function store(CreateTaskRequest $request): JsonResponse
+    public function store(CreateTaskRequest $request): LaravelJsonResponse
     {
         try {
             $user = $this->authService->user();
 
             if (! $user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not authenticated',
-                ], Response::HTTP_UNAUTHORIZED);
+                return JsonResponse::unauthorized('User not authenticated');
             }
 
             $taskData = array_merge($request->validated(), [
@@ -93,54 +87,37 @@ class TaskController extends Controller
             // Load relationships for the response
             $task->load(['project', 'assignedTo', 'createdBy']);
 
-            return response()->json([
-                'success' => true,
-                'data' => new TaskResource($task),
-                'message' => 'Task created successfully',
-            ], Response::HTTP_CREATED);
+            return JsonResponse::created(new TaskResource($task), 'Task created successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create task',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to create task');
         }
     }
 
     /**
      * Get task details
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id): LaravelJsonResponse
     {
         try {
             $task = $this->taskRepository->findById($id);
 
             if (! $task) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Task not found',
-                ], Response::HTTP_NOT_FOUND);
+                return JsonResponse::notFound('Task not found');
             }
 
             // Load relationships for the response
             $task->load(['project', 'assignedTo', 'createdBy']);
 
-            return response()->json([
-                'success' => true,
-                'data' => new TaskResource($task),
-                'message' => 'Task retrieved successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success(new TaskResource($task), 'Task retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve task',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to retrieve task');
         }
     }
 
     /**
      * Update task
      */
-    public function update(UpdateTaskRequest $request, int $id): JsonResponse
+    public function update(UpdateTaskRequest $request, int $id): LaravelJsonResponse
     {
         try {
             /** @var \App\Models\User $user */
@@ -148,10 +125,7 @@ class TaskController extends Controller
             $task = $this->taskRepository->findById($id);
 
             if (! $task) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Task not found',
-                ], Response::HTTP_NOT_FOUND);
+                return JsonResponse::notFound('Task not found');
             }
 
             /** @var \App\Models\Role $role */
@@ -161,10 +135,7 @@ class TaskController extends Controller
                         $role->slug === 'admin';
 
             if (! $canUpdate) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You can only update tasks assigned to you or created by you',
-                ], Response::HTTP_FORBIDDEN);
+                return JsonResponse::forbidden('You can only update tasks assigned to you or created by you');
             }
 
             // Prepare update data
@@ -193,10 +164,7 @@ class TaskController extends Controller
             $updated = $this->taskRepository->updateFromDTO($id, $taskDTO);
 
             if (! $updated) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to update task',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return JsonResponse::internalServerError('Failed to update task');
             }
 
             $updatedTask = $this->taskRepository->findById($id);
@@ -204,50 +172,34 @@ class TaskController extends Controller
             // Load relationships for the response
             $updatedTask->load(['project', 'assignedTo', 'createdBy']);
 
-            return response()->json([
-                'success' => true,
-                'data' => new TaskResource($updatedTask),
-                'message' => 'Task updated successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success(new TaskResource($updatedTask), 'Task updated successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update task',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to update task');
         }
     }
 
     /**
      * Delete task (author or admin)
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $id): LaravelJsonResponse
     {
         try {
             $user = $this->authService->user();
             $task = $this->taskRepository->findById($id);
 
             if (! $user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not authenticated',
-                ], Response::HTTP_UNAUTHORIZED);
+                return JsonResponse::unauthorized('User not authenticated');
             }
 
             if (! $task) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Task not found',
-                ], Response::HTTP_NOT_FOUND);
+                return JsonResponse::notFound('Task not found');
             }
 
             // Check permissions: author or admin
             /** @var \App\Models\Role $role */
             $role = $user->role;
             if ($task->created_by !== $user->id && $role->slug !== 'admin') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You can only delete your own tasks',
-                ], Response::HTTP_FORBIDDEN);
+                return JsonResponse::forbidden('You can only delete your own tasks');
             }
 
             // Note: Laravel repositories typically don't have delete methods
@@ -255,21 +207,12 @@ class TaskController extends Controller
             $deleted = $task->delete();
 
             if (! $deleted) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to delete task',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return JsonResponse::internalServerError('Failed to delete task');
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Task deleted successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::successMessage('Task deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete task',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to delete task');
         }
     }
 }

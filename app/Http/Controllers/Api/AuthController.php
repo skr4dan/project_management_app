@@ -10,9 +10,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Http\Responses\JsonResponse;
 use App\Services\Contracts\AuthServiceInterface;
-use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\JsonResponse as LaravelJsonResponse;
 
 class AuthController extends Controller
 {
@@ -23,35 +23,28 @@ class AuthController extends Controller
     /**
      * Login user and return JWT token.
      */
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request): LaravelJsonResponse
     {
         try {
             $loginDTO = LoginDTO::fromArray($request->validated());
             /** @var AuthResponseDTO $result */
             $result = $this->authService->login($loginDTO);
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'access_token' => $result->access_token,
-                    'token_type' => $result->token_type,
-                    'expires_in' => $result->expires_in,
-                    'user' => new UserResource($result->user),
-                ],
-                'message' => 'Login successful',
-            ], Response::HTTP_OK);
+            return JsonResponse::success([
+                'access_token' => $result->access_token,
+                'token_type' => $result->token_type,
+                'expires_in' => $result->expires_in,
+                'user' => new UserResource($result->user),
+            ], 'Login successful');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], Response::HTTP_UNAUTHORIZED);
+            return JsonResponse::unauthorized($e->getMessage());
         }
     }
 
     /**
      * Register a new user and return JWT token.
      */
-    public function register(RegisterRequest $request): JsonResponse
+    public function register(RegisterRequest $request): LaravelJsonResponse
     {
         try {
             $validatedData = $request->validated();
@@ -66,91 +59,61 @@ class AuthController extends Controller
             /** @var AuthResponseDTO $result */
             $result = $this->authService->register($registerDTO, $avatarPath);
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'access_token' => $result->access_token,
-                    'token_type' => $result->token_type,
-                    'expires_in' => $result->expires_in,
-                    'user' => new UserResource($result->user),
-                ],
-                'message' => 'Registration successful',
-            ], Response::HTTP_CREATED);
+            return JsonResponse::created([
+                'access_token' => $result->access_token,
+                'token_type' => $result->token_type,
+                'expires_in' => $result->expires_in,
+                'user' => new UserResource($result->user),
+            ], 'Registration successful');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], Response::HTTP_BAD_REQUEST);
+            return JsonResponse::badRequest($e->getMessage());
         }
     }
 
     /**
      * Logout user by invalidating token.
      */
-    public function logout(): JsonResponse
+    public function logout(): LaravelJsonResponse
     {
         try {
             $this->authService->logout();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Logout successful',
-            ], Response::HTTP_OK);
+            return JsonResponse::successMessage('Logout successful');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Logout failed',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Logout failed');
         }
     }
 
     /**
      * Refresh JWT token.
      */
-    public function refresh(): JsonResponse
+    public function refresh(): LaravelJsonResponse
     {
         try {
             /** @var TokenResponseDTO $result */
             $result = $this->authService->refresh();
 
-            return response()->json([
-                'success' => true,
-                'data' => $result->toArray(),
-                'message' => 'Token refreshed successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success($result->toArray(), 'Token refreshed successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Token refresh failed',
-            ], Response::HTTP_UNAUTHORIZED);
+            return JsonResponse::unauthorized('Token refresh failed');
         }
     }
 
     /**
      * Get authenticated user profile.
      */
-    public function user(): JsonResponse
+    public function user(): LaravelJsonResponse
     {
         try {
             $user = $this->authService->user();
 
             if (! $user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found',
-                ], Response::HTTP_NOT_FOUND);
+                return JsonResponse::notFound('User not found');
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => new UserResource($user),
-                'message' => 'User profile retrieved successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success(new UserResource($user), 'User profile retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve user profile',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to retrieve user profile');
         }
     }
 }

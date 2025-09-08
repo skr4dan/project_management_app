@@ -9,9 +9,10 @@ use App\Http\Requests\Api\CreateProjectRequest;
 use App\Http\Requests\Api\ProjectIndexRequest;
 use App\Http\Requests\Api\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
+use App\Http\Responses\JsonResponse;
 use App\Repositories\Contracts\ProjectRepositoryInterface;
 use App\Services\Contracts\AuthServiceInterface;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\JsonResponse as LaravelJsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProjectController extends Controller
@@ -24,7 +25,7 @@ class ProjectController extends Controller
     /**
      * Get list of projects with optional status filtering
      */
-    public function index(ProjectIndexRequest $request): JsonResponse
+    public function index(ProjectIndexRequest $request): LaravelJsonResponse
     {
         try {
             $status = $request->validated('status', null);
@@ -35,23 +36,16 @@ class ProjectController extends Controller
                 $projects = $this->projectRepository->getByStatus(ProjectStatus::from($status))->load(['createdBy', 'tasks']);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => ProjectResource::collection($projects),
-                'message' => 'Projects retrieved successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success(ProjectResource::collection($projects), 'Projects retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve projects',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to retrieve projects');
         }
     }
 
     /**
      * Create a new project (manager, admin only)
      */
-    public function store(CreateProjectRequest $request): JsonResponse
+    public function store(CreateProjectRequest $request): LaravelJsonResponse
     {
         try {
             /** @var \App\Models\User $user */
@@ -68,79 +62,53 @@ class ProjectController extends Controller
             // Load the createdBy relationship for the response
             $project->load('createdBy');
 
-            return response()->json([
-                'success' => true,
-                'data' => new ProjectResource($project),
-                'message' => 'Project created successfully',
-            ], Response::HTTP_CREATED);
+            return JsonResponse::created(new ProjectResource($project), 'Project created successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create project',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to create project');
         }
     }
 
     /**
      * Get project details
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id): LaravelJsonResponse
     {
         try {
             $project = $this->projectRepository->findById($id);
 
             if (! $project) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Project not found',
-                ], Response::HTTP_NOT_FOUND);
+                return JsonResponse::notFound('Project not found');
             }
 
             // Load relationships for the response
             $project->load(['createdBy', 'tasks']);
 
-            return response()->json([
-                'success' => true,
-                'data' => new ProjectResource($project),
-                'message' => 'Project retrieved successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success(new ProjectResource($project), 'Project retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve project',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to retrieve project');
         }
     }
 
     /**
      * Update project (author or admin)
      */
-    public function update(UpdateProjectRequest $request, int $id): JsonResponse
+    public function update(UpdateProjectRequest $request, int $id): LaravelJsonResponse
     {
         try {
             $user = $this->authService->user();
             $project = $this->projectRepository->findById($id);
 
             if (! $user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not authenticated',
-                ], Response::HTTP_UNAUTHORIZED);
+                return JsonResponse::unauthorized('User not authenticated');
             }
 
             if (! $project) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Project not found',
-                ], Response::HTTP_NOT_FOUND);
+                return JsonResponse::notFound('Project not found');
             }
 
             // Check permissions: author or admin
             if ($project->created_by !== $user->id && $user->role?->slug !== 'admin') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You can only update your own projects',
-                ], Response::HTTP_FORBIDDEN);
+                return JsonResponse::forbidden('You can only update your own projects');
             }
 
             // Get current project data for merging
@@ -160,10 +128,7 @@ class ProjectController extends Controller
             $updated = $this->projectRepository->updateFromDTO($id, $projectDTO);
 
             if (! $updated) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to update project',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return JsonResponse::internalServerError('Failed to update project');
             }
 
             $updatedProject = $this->projectRepository->findById($id);
@@ -171,23 +136,16 @@ class ProjectController extends Controller
             // Load relationships for the response
             $updatedProject->load(['createdBy', 'tasks']);
 
-            return response()->json([
-                'success' => true,
-                'data' => new ProjectResource($updatedProject),
-                'message' => 'Project updated successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success(new ProjectResource($updatedProject), 'Project updated successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update project',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to update project');
         }
     }
 
     /**
      * Delete project (author or admin)
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $id): LaravelJsonResponse
     {
         try {
             /** @var \App\Models\User $user */
@@ -195,20 +153,14 @@ class ProjectController extends Controller
             $project = $this->projectRepository->findById($id);
 
             if (! $project) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Project not found',
-                ], Response::HTTP_NOT_FOUND);
+                return JsonResponse::notFound('Project not found');
             }
 
             /** @var \App\Models\Role $role */
             $role = $user->role;
             // Check permissions: author or admin
             if ($project->created_by !== $user->id && $role->slug !== 'admin') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You can only delete your own projects',
-                ], Response::HTTP_FORBIDDEN);
+                return JsonResponse::forbidden('You can only delete your own projects');
             }
 
             // Note: Laravel repositories typically don't have delete methods
@@ -216,21 +168,12 @@ class ProjectController extends Controller
             $deleted = $project->delete();
 
             if (! $deleted) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to delete project',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return JsonResponse::internalServerError('Failed to delete project');
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Project deleted successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::successMessage('Project deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete project',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to delete project');
         }
     }
 }

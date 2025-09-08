@@ -6,9 +6,10 @@ use App\DTOs\User\UserDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\UpdateUserRequest;
 use App\Http\Resources\UserResource;
+use App\Http\Responses\JsonResponse;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Contracts\AuthServiceInterface;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\JsonResponse as LaravelJsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
@@ -21,59 +22,42 @@ class UserController extends Controller
     /**
      * Get list of users (admin, manager only)
      */
-    public function index(): JsonResponse
+    public function index(): LaravelJsonResponse
     {
         try {
             $users = $this->userRepository->getActiveUsers()->load('role');
 
-            return response()->json([
-                'success' => true,
-                'data' => UserResource::collection($users),
-                'message' => 'Users retrieved successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success(UserResource::collection($users), 'Users retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve users',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to retrieve users');
         }
     }
 
     /**
      * Get user details
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id): LaravelJsonResponse
     {
         try {
             $user = $this->userRepository->findById($id);
 
             if (! $user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found',
-                ], Response::HTTP_NOT_FOUND);
+                return JsonResponse::notFound('User not found');
             }
 
             // Load role relationship for the response
             $user->load('role');
 
-            return response()->json([
-                'success' => true,
-                'data' => new UserResource($user),
-                'message' => 'User retrieved successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success(new UserResource($user), 'User retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve user',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to retrieve user');
         }
     }
 
     /**
      * Update user profile (own profile or admin)
      */
-    public function update(UpdateUserRequest $request, int $id): JsonResponse
+    public function update(UpdateUserRequest $request, int $id): LaravelJsonResponse
     {
         try {
             /** @var \App\Models\User $authenticatedUser */
@@ -82,20 +66,14 @@ class UserController extends Controller
             $targetUser = $this->userRepository->findById($id);
 
             if (! $targetUser) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found',
-                ], Response::HTTP_NOT_FOUND);
+                return JsonResponse::notFound('User not found');
             }
 
             // Allow admin to update any user, or users to update their own profile
             /** @var \App\Models\Role $role */
             $role = $authenticatedUser->role;
             if ($authenticatedUser->id !== $id && $role->slug !== 'admin') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You can only update your own profile',
-                ], Response::HTTP_FORBIDDEN);
+                return JsonResponse::forbidden('You can only update your own profile');
             }
 
             $user = $targetUser;
@@ -138,24 +116,14 @@ class UserController extends Controller
             $updated = $this->userRepository->updateFromDTO($id, $userDTO);
 
             if (! $updated) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to update user',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return JsonResponse::internalServerError('Failed to update user');
             }
 
             $updatedUser = $this->userRepository->findById($id);
 
-            return response()->json([
-                'success' => true,
-                'data' => new UserResource($updatedUser),
-                'message' => 'User updated successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success(new UserResource($updatedUser), 'User updated successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update user',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to update user');
         }
     }
 }

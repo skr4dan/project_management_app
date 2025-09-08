@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\JsonResponse;
 use App\Services\Contracts\StatisticsServiceInterface;
-use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\JsonResponse as LaravelJsonResponse;
 
 class StatisticsController extends Controller
 {
@@ -16,21 +16,14 @@ class StatisticsController extends Controller
     /**
      * Get general statistics
      */
-    public function index(): JsonResponse
+    public function index(): LaravelJsonResponse
     {
         try {
             $statistics = $this->statisticsService->getStatistics();
 
-            return response()->json([
-                'success' => true,
-                'data' => $statistics->toArray(),
-                'message' => 'Statistics retrieved successfully',
-            ], Response::HTTP_OK);
+            return JsonResponse::success($statistics->toArray(), 'Statistics retrieved successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve statistics',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return JsonResponse::internalServerError('Failed to retrieve statistics');
         }
     }
 }
