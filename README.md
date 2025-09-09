@@ -5,7 +5,7 @@ A comprehensive Laravel 12-based project management application with JWT authent
 ## ✅ Quality Assurance Status
 
 - **✅ PHPStan Analysis**: No errors (Level 8 - Maximum Strictness)
-- **✅ Tests**: All 315 tests passing (1,349 assertions in 6.02s)
+- **✅ Tests**: All 325 tests passing (1393 assertions in 7.08s)
 
 ## 📋 Prerequisites
 
@@ -14,86 +14,30 @@ A comprehensive Laravel 12-based project management application with JWT authent
 - MySQL or SQLite database
 
 ## ⚙️ Installation and Setup
+### Quick Setup (One-liner)
+1. **Create MySQL database and user:**
+   ```sql
+   CREATE DATABASE project_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE USER 'laravel_user'@'localhost' IDENTIFIED BY 'password';
+   GRANT ALL PRIVILEGES ON project_management.* TO 'laravel_user'@'localhost';
+   FLUSH PRIVILEGES;
+   EXIT;
+   ```
 
-1. **Clone the repository:**
+2. **Run this single command For a quick setup:**
    ```bash
-   git clone <repository-url>
-   cd project-management-app
+   git clone https://github.com/skr4dan/project_management_app \
+      && cd project_management_app \
+      && composer install \
+      && cp .env.example .env \
+      && echo -e "\n# Test Data Passwords (optional - for predictable test user logins)\nDEMO_ADMIN_PASSWORD=admin123\nDEMO_MANAGER_PASSWORD=manager456\nDEMO_USER_PASSWORD=user789" >> .env \
+      && php artisan key:generate \
+      && php artisan jwt:secret \
+      && php artisan migrate \
+      && php artisan db:seed \
+      && php artisan serve
    ```
-
-2. **Install PHP dependencies:**
-   ```bash
-   composer install
-   ```
-
-3. **Environment Configuration:**
-   ```bash
-   cp .env.example .env
-   ```
-
-   Update the `.env` file with your database credentials and other settings:
-   ```env
-   APP_NAME="Project Management App"
-   APP_URL=http://localhost:8000
-
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=project_management
-   DB_USERNAME=your_username
-   DB_PASSWORD=your_password
-
-   JWT_SECRET=your_jwt_secret_key
-
-   # Test Data Passwords (optional - for predictable test user logins)
-   DEMO_ADMIN_PASSWORD=admin123
-   DEMO_MANAGER_PASSWORD=manager456
-   DEMO_USER_PASSWORD=user789
-   ```
-
-4. **Generate application key:**
-   ```bash
-   php artisan key:generate
-   ```
-
-5. **Generate JWT secret key:**
-   ```bash
-   php artisan jwt:secret
-   ```
-
-6. **Run database migrations:**
-   ```bash
-   php artisan migrate
-   ```
-
-7. **Seed the database with sample data:**
-   ```bash
-   php artisan db:seed
-   ```
-
-8. **Start the development server:**
-   ```bash
-   php artisan serve
-   ```
-
-   The application will be available at `http://localhost:8000`
-
-## 🗄️ Database Setup
-
-### Running Migrations
-```bash
-php artisan migrate
-```
-
-### Seeding Database
-```bash
-php artisan db:seed
-```
-
-### Fresh Migration with Seeding
-```bash
-php artisan migrate:fresh --seed
-```
+## 🗄️ Database
 
 ### Available Seed Data
 
