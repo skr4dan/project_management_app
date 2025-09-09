@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
             'first_name' => 'Admin',
             'last_name' => 'User',
             'email' => 'admin@example.com',
-            'password' => Hash::make(env('DEMO_ADMIN_PASSWORD', fake()->password())),
+            'password' => Hash::make((string) config('app.demo_admin_password', fake()->password())),
             'role_id' => $adminRoleId,
         ])->create();
 
@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
         ])->createMany(5);
         $managerFactory->create([
             'email' => 'manager@example.com',
-            'password' => Hash::make(env('DEMO_MANAGER_PASSWORD', fake()->password())),
+            'password' => Hash::make((string) config('app.demo_manager_password', fake()->password())),
         ]);
 
         $userFactory = User::factory()->state(fn () => [
@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
         ])->createMany(5);
         $userFactory->create([
             'email' => 'user@example.com',
-            'password' => Hash::make(env('DEMO_USER_PASSWORD', fake()->password())),
+            'password' => Hash::make((string) config('app.demo_user_password', fake()->password())),
         ]);
 
         $users = User::all();
