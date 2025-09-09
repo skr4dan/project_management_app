@@ -44,6 +44,11 @@ A comprehensive Laravel 12-based project management application with JWT authent
    DB_PASSWORD=your_password
 
    JWT_SECRET=your_jwt_secret_key
+
+   # Test Data Passwords (optional - for predictable test user logins)
+   DEMO_ADMIN_PASSWORD=admin123
+   DEMO_MANAGER_PASSWORD=manager456
+   DEMO_USER_PASSWORD=user789
    ```
 
 4. **Generate application key:**
@@ -86,11 +91,17 @@ php artisan migrate:fresh --seed
 ```
 
 ### Available Seed Data
-- **Admin User**: `admin@example.com` / password: `password`
-- **Manager Users**: 5 users with manager role
-- **Regular Users**: 5 users with user role
-- **Sample Projects**: 3 projects with various statuses
-- **Sample Tasks**: 20 tasks assigned to different users
+
+#### Test Users
+- **Admin User**: `admin@example.com` / password: `admin123`
+- **Manager User**: `manager@example.com` / password: `manager456`
+- **Regular User**: `user@example.com` / password: `user789`
+- **Additional Manager Users**: 5 randomly generated users with manager role
+- **Additional Regular Users**: 5 randomly generated users with user role
+
+#### Sample Data
+- **Projects**: 7 projects with various statuses (active, completed, on-hold)
+- **Tasks**: 50 tasks distributed across projects and assigned to different users
 
 ## 📚 API Documentation
 

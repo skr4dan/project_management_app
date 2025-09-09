@@ -7,6 +7,7 @@ use App\Models\Task;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,22 +25,35 @@ class DatabaseSeeder extends Seeder
             'first_name' => 'Admin',
             'last_name' => 'User',
             'email' => 'admin@example.com',
+            'password' => Hash::make(env('DEMO_ADMIN_PASSWORD', fake()->password())),
             'role_id' => $adminRoleId,
         ])->create();
 
-        User::factory()->count(5)->state(fn () => [
+        $managerFactory = User::factory()->state(fn () => [
             'first_name' => 'Manager',
-            'last_name' => 'User',
-            'email' => 'manager_'.uniqid().'@example.com',
+            'last_name' => 'Management',
             'role_id' => $managerRoleId,
-        ])->create();
+        ]);
+        $managerFactory->state(fn () => [
+            'email' => 'manager_'.uniqid().'@example.com',
+        ])->createMany(5);
+        $managerFactory->create([
+            'email' => 'manager@example.com',
+            'password' => Hash::make(env('DEMO_MANAGER_PASSWORD', fake()->password())),
+        ]);
 
-        User::factory()->count(5)->state(fn () => [
+        $userFactory = User::factory()->state(fn () => [
             'first_name' => 'Regular',
             'last_name' => 'User',
-            'email' => 'user_'.uniqid().'@example.com',
             'role_id' => $userRoleId,
-        ])->create();
+        ]);
+        $userFactory->state(fn () => [
+            'email' => 'user_'.uniqid().'@example.com',
+        ])->createMany(5);
+        $userFactory->create([
+            'email' => 'user@example.com',
+            'password' => Hash::make(env('DEMO_USER_PASSWORD', fake()->password())),
+        ]);
 
         $users = User::all();
 
@@ -47,12 +61,12 @@ class DatabaseSeeder extends Seeder
             ->state(fn ($attributes) => [
                 'created_by' => $users->random()->id,
             ])
-            ->count(3)
+            ->count(7)
             ->create();
 
-        $tasks = Task::factory()
-            ->count(20)
-            ->state(fn ($attributes) => [
+        Task::factory()
+            ->count(50)
+            ->state(fn () => [
                 'project_id' => $projects->random()->id,
                 'assigned_to' => $users->random()->id,
                 'created_by' => $users->random()->id,
