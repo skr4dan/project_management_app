@@ -56,17 +56,22 @@ A comprehensive Laravel 12-based project management application with JWT authent
    php artisan key:generate
    ```
 
-5. **Run database migrations:**
+5. **Generate JWT secret key:**
+   ```bash
+   php artisan jwt:secret
+   ```
+
+6. **Run database migrations:**
    ```bash
    php artisan migrate
    ```
 
-6. **Seed the database with sample data:**
+7. **Seed the database with sample data:**
    ```bash
    php artisan db:seed
    ```
 
-7. **Start the development server:**
+8. **Start the development server:**
    ```bash
    php artisan serve
    ```
