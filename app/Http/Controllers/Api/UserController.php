@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource;
 use App\Http\Responses\JsonResponse;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Services\Contracts\AvatarFileServiceInterface;
 use Illuminate\Http\JsonResponse as LaravelJsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +18,7 @@ class UserController extends Controller
 {
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
+        private readonly AvatarFileServiceInterface $fileService,
     ) {}
 
     /**
@@ -92,11 +94,7 @@ class UserController extends Controller
 
             // Handle avatar upload
             if ($request->hasFile('avatar')) {
-                // Delete old avatar if exists
-                if ($user->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->avatar)) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
-                }
-                $avatarPath = $request->file('avatar')->store('avatars', 'public');
+                $avatarPath = $this->fileService->uploadAvatar($request->file('avatar'), $user->avatar);
             }
 
             // Get current user data for merging

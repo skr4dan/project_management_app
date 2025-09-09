@@ -12,12 +12,14 @@ use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Responses\JsonResponse;
 use App\Services\Contracts\AuthServiceInterface;
+use App\Services\Contracts\AvatarFileServiceInterface;
 use Illuminate\Http\JsonResponse as LaravelJsonResponse;
 
 class AuthController extends Controller
 {
     public function __construct(
         private readonly AuthServiceInterface $authService,
+        private readonly AvatarFileServiceInterface $fileService,
     ) {}
 
     /**
@@ -52,7 +54,10 @@ class AuthController extends Controller
 
             // Handle avatar upload
             if ($request->hasFile('avatar')) {
-                $avatarPath = $request->file('avatar')->store('avatars', 'public') ?: null;
+                $avatarPath = $this->fileService->uploadAvatar($request->file('avatar'));
+                if ($avatarPath === false) {
+                    return JsonResponse::internalServerError('Failed to upload avatar');
+                }
             }
 
             $registerDTO = RegisterDTO::fromArray($validatedData);
