@@ -197,7 +197,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\"\n}"
+              "raw": "{\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Johnson\",\n  \"email\": \"jane.johnson@example.com\",\n  \"phone\": \"+1-555-0123\",\n  \"avatar\": \"(Upload a JPEG/PNG file)\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/users/1",
@@ -222,9 +222,16 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/projects",
+              "raw": "{{base_url}}/projects?status=active",
               "host": ["{{base_url}}"],
-              "path": ["projects"]
+              "path": ["projects"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active",
+                  "description": "Filter by project status (active, completed, archived)"
+                }
+              ]
             }
           }
         },
@@ -244,7 +251,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"New Project\",\n  \"description\": \"Project description\",\n  \"status\": \"active\"\n}"
+              "raw": "{\n  \"name\": \"Website Redesign Project\",\n  \"description\": \"Complete overhaul of company website with modern design and improved user experience\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/projects",
@@ -286,7 +293,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Project\",\n  \"description\": \"Updated description\",\n  \"status\": \"completed\"\n}"
+              "raw": "{\n  \"name\": \"Updated Website Redesign Project\",\n  \"description\": \"Updated project description with new requirements\",\n  \"status\": \"completed\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/projects/1",
@@ -328,9 +335,51 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/tasks",
+              "raw": "{{base_url}}/tasks?status=pending&priority=high&project_id=1&assigned_to=3&sort_by=due_date&sort_order=asc&per_page=15&page=1",
               "host": ["{{base_url}}"],
-              "path": ["tasks"]
+              "path": ["tasks"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by task status (pending, in_progress, completed)"
+                },
+                {
+                  "key": "priority",
+                  "value": "high",
+                  "description": "Filter by task priority (low, medium, high)"
+                },
+                {
+                  "key": "project_id",
+                  "value": "1",
+                  "description": "Filter by project ID"
+                },
+                {
+                  "key": "assigned_to",
+                  "value": "3",
+                  "description": "Filter by assigned user ID"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "due_date",
+                  "description": "Sort by field (due_date, created_at)"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "asc",
+                  "description": "Sort order (asc, desc)"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                }
+              ]
             }
           }
         },
@@ -350,7 +399,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"New Task\",\n  \"description\": \"Task description\",\n  \"status\": \"pending\",\n  \"priority\": \"medium\",\n  \"project_id\": 1,\n  \"assigned_to\": 2,\n  \"due_date\": \"2024-12-31\"\n}"
+              "raw": "{\n  \"title\": \"Design homepage mockup\",\n  \"description\": \"Create wireframes and mockups for the new homepage layout\",\n  \"priority\": \"high\",\n  \"project_id\": 1,\n  \"assigned_to\": 3,\n  \"due_date\": \"2024-02-15\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/tasks",
@@ -392,7 +441,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Updated Task\",\n  \"description\": \"Updated description\",\n  \"status\": \"in_progress\",\n  \"priority\": \"high\"\n}"
+              "raw": "{\n  \"title\": \"Updated homepage design task\",\n  \"description\": \"Updated task with new design specifications\",\n  \"status\": \"completed\",\n  \"priority\": \"high\",\n  \"assigned_to\": 3,\n  \"due_date\": \"2024-02-20\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/tasks/1",
