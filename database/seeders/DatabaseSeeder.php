@@ -21,7 +21,8 @@ class DatabaseSeeder extends Seeder
         $userRoleId = \App\Models\Role::where('slug', 'user')->firstOrFail()->id;
 
         // Roles are now created by migration, create test users with different roles
-        User::factory()->state([
+        $userFactory = User::factory()->state(['status' => \App\Enums\User\UserStatus::Active->value]);
+        $userFactory->state([
             'first_name' => 'Admin',
             'last_name' => 'User',
             'email' => 'admin@example.com',
@@ -29,7 +30,7 @@ class DatabaseSeeder extends Seeder
             'role_id' => $adminRoleId,
         ])->create();
 
-        $managerFactory = User::factory()->state(fn () => [
+        $managerFactory = $userFactory->state(fn () => [
             'first_name' => 'Manager',
             'last_name' => 'Management',
             'role_id' => $managerRoleId,
@@ -42,15 +43,15 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make((string) config('app.demo_manager_password', fake()->password())),
         ]);
 
-        $userFactory = User::factory()->state(fn () => [
+        $regularUserFactory = $userFactory->state(fn () => [
             'first_name' => 'Regular',
             'last_name' => 'User',
             'role_id' => $userRoleId,
         ]);
-        $userFactory->state(fn () => [
+        $regularUserFactory->state(fn () => [
             'email' => 'user_'.uniqid().'@example.com',
         ])->createMany(5);
-        $userFactory->create([
+        $regularUserFactory->create([
             'email' => 'user@example.com',
             'password' => Hash::make((string) config('app.demo_user_password', fake()->password())),
         ]);
